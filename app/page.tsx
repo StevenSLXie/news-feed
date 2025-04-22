@@ -1,95 +1,186 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+
+import { useEffect, useState } from 'react';
+
+interface Feed {
+  id: string;
+  url: string;
+  title?: string;
+}
+
+interface Article {
+  feedId: string;
+  feedTitle: string;
+  title?: string;
+  link?: string;
+  published?: string;
+  read?: boolean;
+  saved?: boolean;
+}
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [feeds, setFeeds] = useState<Feed[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [newFeedUrl, setNewFeedUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+  useEffect(() => {
+    fetchFeeds();
+    fetchArticles();
+  }, []);
+
+  async function fetchFeeds() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/feeds');
+      const data = await res.json();
+      setFeeds(data);
+    } catch (e) {
+      setError('Failed to load feeds');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function fetchArticles() {
+    setError(null);
+    try {
+      const res = await fetch('/api/articles');
+      const data = await res.json();
+      // Try to fetch read/saved state for each article
+      const stateRes = await fetch('/api/article-state-bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ articles: data }) });
+      let stateMap: Record<string, {read: boolean, saved: boolean}> = {};
+      if (stateRes.ok) {
+        stateMap = await stateRes.json();
+      }
+      setArticles(data.map((a: Article) => ({ ...a, ...stateMap[a.link || ''] }))); 
+    } catch (e) {
+      setError('Failed to load articles');
+    }
+  }
+
+  async function addFeed(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newFeedUrl) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/feeds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: newFeedUrl }),
+      });
+      if (!res.ok) throw new Error();
+      setNewFeedUrl('');
+      await fetchFeeds();
+      await fetchArticles();
+    } catch {
+      setError('Failed to add feed');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function removeFeed(id: string) {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/feeds', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) throw new Error();
+      await fetchFeeds();
+      await fetchArticles();
+    } catch {
+      setError('Failed to remove feed');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function toggleRead(article: Article) {
+    await updateArticleState(article, !article.read, article.saved);
+  }
+
+  async function toggleSaved(article: Article) {
+    await updateArticleState(article, article.read, !article.saved);
+  }
+
+  async function updateArticleState(article: Article, read?: boolean, saved?: boolean) {
+    try {
+      await fetch('/api/article-state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          link: article.link,
+          feedId: article.feedId,
+          title: article.title,
+          published: article.published,
+          read,
+          saved
+        })
+      });
+      fetchArticles();
+    } catch {}
+  }
+
+  async function removeArticle(article: Article) {
+    try {
+      await fetch('/api/remove-article', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ link: article.link }),
+      });
+      // Remove the article from local state without refreshing
+      setArticles(prev => prev.filter(a => a.link !== article.link));
+    } catch {}
+  }
+
+  return (
+    <main style={{ maxWidth: 600, margin: '40px auto', fontFamily: 'sans-serif' }}>
+      <h1 style={{ textAlign: 'center', fontWeight: 500 }}>My News Feeds</h1>
+      <form onSubmit={addFeed} style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+        <input
+          type="url"
+          placeholder="Add RSS feed URL..."
+          value={newFeedUrl}
+          onChange={e => setNewFeedUrl(e.target.value)}
+          style={{ flex: 1, padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
+          required
+        />
+        <button type="submit" style={{ padding: '8px 16px', borderRadius: 4, border: 'none', background: '#222', color: '#fff' }} disabled={loading}>
+          Add
+        </button>
+      </form>
+      {error && <div style={{ color: 'red', marginBottom: 16 }}>{error}</div>}
+      {loading && <div>Loading...</div>}
+      <ul style={{ listStyle: 'none', padding: 0, marginBottom: 32 }}>
+        {feeds.map(feed => (
+          <li key={feed.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #eee' }}>
+            <span>{feed.title || feed.url}</span>
+            <button onClick={() => removeFeed(feed.id)} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}>&times;</button>
+          </li>
+        ))}
+      </ul>
+      <h2 style={{ fontWeight: 500, fontSize: 22, margin: '16px 0 8px' }}>Articles</h2>
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+        {articles.map((article, idx) => (
+          <li key={idx} style={{ marginBottom: 18, paddingBottom: 14, borderBottom: '1px solid #eee', background: article.read ? '#f7f7f7' : undefined }}>
+            <a href={article.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 17, fontWeight: 500, color: '#1a0dab', textDecoration: 'none' }}>{article.title}</a>
+            <div style={{ fontSize: 13, color: '#555', marginTop: 2 }}>{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
+            <div style={{ marginTop: 4, display: 'flex', gap: 10 }}>
+              <button onClick={() => toggleRead(article)} style={{ fontSize: 12, color: article.read ? '#0a0' : '#888', background: 'none', border: '1px solid #ccc', borderRadius: 4, padding: '2px 8px', cursor: 'pointer' }}>{article.read ? 'Read' : 'Mark as Read'}</button>
+              <button onClick={() => toggleSaved(article)} style={{ fontSize: 12, color: article.saved ? '#09c' : '#888', background: 'none', border: '1px solid #ccc', borderRadius: 4, padding: '2px 8px', cursor: 'pointer' }}>{article.saved ? 'Saved' : 'Save'}</button>
+              <button onClick={() => removeArticle(article)} style={{ fontSize: 12, color: '#c00', background: 'none', border: '1px solid #ccc', borderRadius: 4, padding: '2px 8px', cursor: 'pointer' }}>Remove</button>
+            </div>
+          </li>
+        ))}
+        {articles.length === 0 && <li style={{ color: '#888' }}>No articles to show.</li>}
+      </ul>
+    </main>
   );
 }
