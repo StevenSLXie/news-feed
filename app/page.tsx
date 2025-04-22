@@ -24,6 +24,7 @@ export default function Home() {
   const [newFeedUrl, setNewFeedUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [feedsCollapsed, setFeedsCollapsed] = useState(true);
 
   useEffect(() => {
     fetchFeeds();
@@ -158,14 +159,23 @@ export default function Home() {
       </form>
       {error && <div style={{ color: 'red', marginBottom: 16 }}>{error}</div>}
       {loading && <div>Loading...</div>}
-      <ul style={{ listStyle: 'none', padding: 0, marginBottom: 32 }}>
-        {feeds.map(feed => (
-          <li key={feed.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #eee' }}>
-            <span>{feed.title || feed.url}</span>
-            <button onClick={() => removeFeed(feed.id)} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}>&times;</button>
-          </li>
-        ))}
-      </ul>
+      <h2 style={{ marginTop: 32, fontSize: 18, cursor: 'pointer', userSelect: 'none' }} onClick={() => setFeedsCollapsed(c => !c)}>
+        Subscribed Feeds
+        <span style={{ marginLeft: 8, fontSize: 14, color: '#888' }}>{feedsCollapsed ? '▼' : '▲'}</span>
+      </h2>
+      {!feedsCollapsed && (
+        <ul style={{ paddingLeft: 0, listStyle: 'none', marginBottom: 24 }}>
+          {feeds.map(feed => (
+            <li key={feed.id} style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {feed.title ? feed.title : feed.url}
+              </span>
+              <button onClick={() => removeFeed(feed.id)} style={{ marginLeft: 8, color: '#c00', background: 'none', border: 'none', fontSize: 18, cursor: 'pointer' }} title="Unsubscribe">×</button>
+            </li>
+          ))}
+          {feeds.length === 0 && <li style={{ color: '#888' }}>No feeds subscribed.</li>}
+        </ul>
+      )}
       <h2 style={{ fontWeight: 500, fontSize: 22, margin: '16px 0 8px' }}>Articles</h2>
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {articles.map((article, idx) => (
