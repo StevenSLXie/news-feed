@@ -27,7 +27,8 @@ export async function POST(req: NextRequest) {
       },
     });
     return Response.json({ success: true });
-  } catch (error) {
+  } catch {
+    // error intentionally ignored
     return Response.json({ error: 'Failed to remove article' }, { status: 500 });
   }
 }

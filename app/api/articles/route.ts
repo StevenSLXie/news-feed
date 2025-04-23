@@ -29,20 +29,20 @@ export async function GET(req: NextRequest) {
       where: { userId },
       select: { link: true }
     });
-    const removedLinks = new Set(removed.map((r: any) => r.link));
-    let articles: any[] = [];
+    const removedLinks = new Set(removed.map((r: { link: string }) => r.link));
+    let articles: { feedId: number, feedTitle: string, title: string, link: string, published: string | null }[] = [];
     for (const feed of feeds) {
       try {
         const parsed = await parser.parseURL(feed.url);
-        const feedArticles = (parsed.items || []).map(item => ({
+        const items = (parsed.items || []).map(item => ({
           feedId: feed.id,
-          feedTitle: feed.title || feed.url,
-          title: item.title,
-          link: item.link,
-          published: item.pubDate,
+          feedTitle: feed.title || '',
+          title: item.title ?? '',
+          link: item.link ?? '',
+          published: item.pubDate ?? null
         }));
         // Filter out removed articles
-        articles = articles.concat(feedArticles.filter(a => !removedLinks.has(a.link)));
+        articles = articles.concat(items.filter(a => !removedLinks.has(a.link)));
       } catch (err) {
         console.warn('GET /api/articles: Failed to parse feed', feed.url, err);
         // Ignore feeds that fail to fetch/parse

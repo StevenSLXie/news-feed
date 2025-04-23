@@ -7,9 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // url      = "postgresql://steven:steven_1234@localhost:5432/news_feed"
-  url = "postgresql://postgres.sijxsldjagaovvsnuhgp:steven_1234@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
-}
+ url = ""
 
 model Account {
   id                 String  @id @default(cuid())

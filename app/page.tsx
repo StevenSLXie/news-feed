@@ -40,7 +40,7 @@ export default function Home() {
       const res = await fetch('/api/feeds');
       const data = await res.json();
       setFeeds(data);
-    } catch (e) {
+    } catch {
       setError('Failed to load feeds');
     } finally {
       setLoading(false);
@@ -59,7 +59,7 @@ export default function Home() {
         stateMap = await stateRes.json();
       }
       setArticles(data.map((a: Article) => ({ ...a, ...stateMap[a.link || ''] }))); 
-    } catch (e) {
+    } catch {
       setError('Failed to load articles');
     }
   }
@@ -131,7 +131,9 @@ export default function Home() {
         credentials: 'include',
       });
       fetchArticles();
-    } catch {}
+    } catch {
+      // error intentionally ignored
+    }
   }
 
   async function removeArticle(article: Article) {
@@ -144,7 +146,9 @@ export default function Home() {
       });
       // Remove the article from local state without refreshing
       setArticles(prev => prev.filter(a => a.link !== article.link));
-    } catch {}
+    } catch {
+      // error intentionally ignored
+    }
   }
 
   if (status === "loading") {
