@@ -14,20 +14,18 @@ async function getUserIdFromSession() {
   return user?.id || null;
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) {
     return new Response("Unauthorized", { status: 401 });
   }
-  const userEmail = session.user?.email;
-  // Use userEmail to look up the user in your DB
 }
 
-export async function POST(req: NextRequest) {
+export async function POST() {
   try {
-    const { articles } = await req.json();
+    const { articles } = await NextRequest.json();
     if (!Array.isArray(articles)) return Response.json({}, { status: 400 });
-    const links = articles.map((a: any) => a.link).filter(Boolean);
+    const links = articles.map(a => a.link).filter(Boolean);
     if (links.length === 0) return Response.json({}, { status: 200 });
     const userId = await getUserIdFromSession();
     if (!userId) return new Response("Unauthorized", { status: 401 });
@@ -40,7 +38,7 @@ export async function POST(req: NextRequest) {
       stateMap[row.link] = { read: row.read, saved: row.saved };
     }
     return Response.json(stateMap, { status: 200 });
-  } catch (error) {
+  } catch {
     return Response.json({}, { status: 500 });
   }
 }

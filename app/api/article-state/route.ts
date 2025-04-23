@@ -12,21 +12,23 @@ async function getUserIdFromSession() {
   return user?.id || null;
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) {
     return new Response("Unauthorized", { status: 401 });
   }
-  const userEmail = session.user?.email;
-  // Use userEmail to look up the user in your DB
 }
 
-export async function POST(req: NextRequest) {
-  const { link, read, saved, title, feedId, published } = await req.json();
-  if (!link || !feedId) return Response.json({ error: 'Missing required fields' }, { status: 400 });
-  const userId = await getUserIdFromSession();
-  if (!userId) return new Response("Unauthorized", { status: 401 });
+export async function POST() {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const { link, read, saved, title, feedId, published } = await NextRequest.json();
+    if (!link || !feedId) return Response.json({ error: 'Missing required fields' }, { status: 400 });
+    const userId = await getUserIdFromSession();
+    if (!userId) return new Response("Unauthorized", { status: 401 });
     const result = await prisma.article.upsert({
       where: { userId_link: { userId, link } },
       update: { read, saved },
@@ -34,7 +36,7 @@ export async function POST(req: NextRequest) {
       select: { id: true, read: true, saved: true }
     });
     return Response.json(result, { status: 200 });
-  } catch (error) {
+  } catch {
     return Response.json({ error: 'Failed to update article state' }, { status: 500 });
   }
 }

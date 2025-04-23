@@ -15,7 +15,7 @@ async function getUserIdFromSession() {
   return user?.id || null;
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const userId = await getUserIdFromSession();
     if (!userId) return new Response("Unauthorized", { status: 401 });
