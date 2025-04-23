@@ -1,16 +1,34 @@
 import { NextRequest } from 'next/server';
-import pool from '../../../lib/db';
 import Parser from 'rss-parser';
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
+import { prisma } from "../../../lib/prisma";
 
 const parser = new Parser();
-const USER_ID = '00000000-0000-0000-0000-000000000001';
+
+async function getUserIdFromSession() {
+  const session = await getServerSession(authOptions);
+  if (!session) return null;
+  const userEmail = session.user?.email;
+  if (!userEmail) return null;
+  const user = await prisma.user.findUnique({ where: { email: userEmail } });
+  return user?.id || null;
+}
 
 export async function GET(req: NextRequest) {
   try {
+    const userId = await getUserIdFromSession();
+    if (!userId) return new Response("Unauthorized", { status: 401 });
     // Get all feeds for the current user
-    const { rows: feeds } = await pool.query('SELECT id, url, title FROM feeds WHERE user_id = $1', [USER_ID]);
+    const feeds = await prisma.feed.findMany({
+      where: { userId },
+      select: { id: true, url: true, title: true }
+    });
     // Get all removed article links for this user
-    const { rows: removed } = await pool.query('SELECT link FROM removed_articles WHERE user_id = $1', [USER_ID]);
+    const removed = await prisma.removedArticle.findMany({
+      where: { userId },
+      select: { link: true }
+    });
     const removedLinks = new Set(removed.map((r: any) => r.link));
     let articles: any[] = [];
     for (const feed of feeds) {

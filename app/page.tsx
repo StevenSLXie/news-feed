@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSession, signIn, signOut } from "next-auth/react";
 
 interface Feed {
   id: string;
@@ -19,6 +20,7 @@ interface Article {
 }
 
 export default function Home() {
+  const { data: session, status } = useSession();
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
   const [newFeedUrl, setNewFeedUrl] = useState('');
@@ -51,7 +53,7 @@ export default function Home() {
       const res = await fetch('/api/articles');
       const data = await res.json();
       // Try to fetch read/saved state for each article
-      const stateRes = await fetch('/api/article-state-bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ articles: data }) });
+      const stateRes = await fetch('/api/article-state-bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ articles: data }), credentials: 'include' });
       let stateMap: Record<string, {read: boolean, saved: boolean}> = {};
       if (stateRes.ok) {
         stateMap = await stateRes.json();
@@ -72,6 +74,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: newFeedUrl }),
+        credentials: 'include', // Ensure cookies are sent
       });
       if (!res.ok) throw new Error();
       setNewFeedUrl('');
@@ -92,6 +95,7 @@ export default function Home() {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
+        credentials: 'include',
       });
       if (!res.ok) throw new Error();
       await fetchFeeds();
@@ -123,7 +127,8 @@ export default function Home() {
           published: article.published,
           read,
           saved
-        })
+        }),
+        credentials: 'include',
       });
       fetchArticles();
     } catch {}
@@ -135,15 +140,36 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ link: article.link }),
+        credentials: 'include',
       });
       // Remove the article from local state without refreshing
       setArticles(prev => prev.filter(a => a.link !== article.link));
     } catch {}
   }
 
+  if (status === "loading") {
+    return <div>Loading authentication...</div>;
+  }
+
+  if (!session) {
+    return (
+      <main style={{ maxWidth: 600, margin: '40px auto', fontFamily: 'sans-serif', textAlign: 'center' }}>
+        <h1 style={{ fontWeight: 500 }}>My News Feeds</h1>
+        <p style={{ margin: '32px 0' }}>You are not signed in.</p>
+        <button onClick={() => signIn()} style={{ fontSize: 16, padding: '8px 24px', borderRadius: 6, border: '1px solid #ccc', background: '#1a0dab', color: '#fff', cursor: 'pointer' }}>Sign in with GitHub</button>
+      </main>
+    );
+  }
+
   return (
     <main style={{ maxWidth: 600, margin: '40px auto', fontFamily: 'sans-serif' }}>
-      <h1 style={{ textAlign: 'center', fontWeight: 500 }}>My News Feeds</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h1 style={{ fontWeight: 500 }}>My News Feeds</h1>
+        <div style={{ fontSize: 15, color: '#555', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span>Signed in as {session.user?.email}</span>
+          <button onClick={() => signOut()} style={{ fontSize: 14, padding: '4px 12px', borderRadius: 4, border: '1px solid #ccc', background: '#eee', color: '#444', cursor: 'pointer' }}>Sign out</button>
+        </div>
+      </div>
       <form onSubmit={addFeed} style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
         <input
           type="url"
