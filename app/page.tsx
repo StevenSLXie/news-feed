@@ -160,13 +160,43 @@ export default function Home() {
       <main style={{ maxWidth: 600, margin: '40px auto', fontFamily: 'sans-serif' }}>
         <h1 style={{ fontWeight: 500, marginBottom: 24 }}>My News Feeds</h1>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <button onClick={() => signIn('google')} style={{ padding: '10px 0', borderRadius: 4, border: '1px solid #ccc', background: '#fff', color: '#222', fontWeight: 500, fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style={{ width: 20, height: 20 }} />
-            Sign in with Google
-          </button>
-          <button onClick={() => signIn('github')} style={{ padding: '10px 0', borderRadius: 4, border: 'none', background: '#24292f', color: '#fff', fontWeight: 500, fontSize: 16, cursor: 'pointer' }}>
-            Sign in with GitHub
-          </button>
+        <button onClick={() => signIn('google')} style={{
+          height: 48,
+          minWidth: 240,
+          padding: '10px 0',
+          borderRadius: 4,
+          border: '1px solid #ccc',
+          background: '#fff',
+          color: '#222',
+          fontWeight: 500,
+          fontSize: 16,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8
+        }}>
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style={{ width: 20, height: 20 }} />
+          Sign in with Google
+        </button>
+        <button onClick={() => signIn('github')} style={{
+          height: 48,
+          minWidth: 240,
+          padding: '10px 0',
+          borderRadius: 4,
+          border: 'none',
+          background: '#24292f',
+          color: '#fff',
+          fontWeight: 500,
+          fontSize: 16,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8
+        }}>
+          Sign in with GitHub
+        </button>
         </div>
       </main>
     );
