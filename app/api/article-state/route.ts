@@ -19,13 +19,14 @@ export async function GET() {
   }
 }
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const { link, read, saved, title, feedId, published } = await NextRequest.json();
+    // Fix: Use req.json() instead of NextRequest.json()
+    const { link, read, saved, title, feedId, published } = await req.json();
     if (!link || !feedId) return Response.json({ error: 'Missing required fields' }, { status: 400 });
     const userId = await getUserIdFromSession();
     if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 });

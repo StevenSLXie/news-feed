@@ -60,18 +60,29 @@ export async function POST(req: NextRequest) {
       await parser.parseString(xml);
     } catch (parseErr) {
       console.warn('POST /api/feeds: RSS parse error for', url, parseErr);
-      return Response.json({ error: 'Invalid RSS/Atom format: ' + (parseErr?.message || parseErr) }, { status: 400 });
+      // Extract error message from parseErr
+      let errorMsg: string;
+      if (parseErr instanceof Error) {
+        errorMsg = parseErr.message;
+      } else {
+        errorMsg = String(parseErr);
+      }
+      return Response.json({ error: `Invalid RSS/Atom format: ${errorMsg}` }, { status: 400 });
     }
   } catch (err) {
     console.error('POST /api/feeds: Fetch error for', url, err);
-    return Response.json({ error: 'Invalid or unreachable RSS feed: ' + (err?.message || err) }, { status: 400 });
+    // Extract error message
+    const fetchErrorMsg = err instanceof Error ? err.message : String(err);
+    return Response.json({ error: `Invalid or unreachable RSS feed: ${fetchErrorMsg}` }, { status: 400 });
   }
   try {
     const feed = await prisma.feed.create({ data: { userId, url, title } });
     return Response.json(feed, { status: 201 });
   } catch (error) {
     console.error('POST /api/feeds: DB error for', url, error);
-    return Response.json({ error: 'Failed to add feed: ' + (error?.message || error) }, { status: 500 });
+    // Extract error message
+    const dbErrorMsg = error instanceof Error ? error.message : String(error);
+    return Response.json({ error: `Failed to add feed: ${dbErrorMsg}` }, { status: 500 });
   }
 }
 
@@ -88,6 +99,8 @@ export async function DELETE(req: NextRequest) {
     return new Response(null, { status: 204 });
   } catch (error) {
     console.error('DELETE /api/feeds: DB error for', id, error);
-    return Response.json({ error: 'Failed to delete feed: ' + (error?.message || error) }, { status: 500 });
+    // Extract error message
+    const deleteErrorMsg = error instanceof Error ? error.message : String(error);
+    return Response.json({ error: `Failed to delete feed: ${deleteErrorMsg}` }, { status: 500 });
   }
 }

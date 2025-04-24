@@ -34,7 +34,7 @@ export async function GET() {
       try {
         const parsed = await parser.parseURL(feed.url);
         const items = (parsed.items || []).map(item => ({
-          feedId: feed.id,
+          feedId: Number(feed.id),
           feedTitle: feed.title || '',
           title: item.title ?? '',
           link: item.link ?? '',

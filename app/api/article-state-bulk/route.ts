@@ -1,4 +1,4 @@
-import { NextRequest, Response } from 'next/server';
+import { NextRequest } from 'next/server';
 import pool from '../../../lib/db';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
@@ -21,9 +21,9 @@ export async function GET() {
   }
 }
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
-    const { articles } = await NextRequest.json();
+    const { articles } = await req.json();
     if (!Array.isArray(articles)) return Response.json({ error: "Bad Request" }, { status: 400 });
     const links = articles.map(a => a.link).filter(Boolean);
     if (links.length === 0) return Response.json({}, { status: 200 });
