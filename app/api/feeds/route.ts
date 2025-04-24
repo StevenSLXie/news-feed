@@ -31,13 +31,15 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const { url, title } = await req.json();
+  const { url } = await req.json();
   if (!url) {
     console.warn('POST /api/feeds: Missing url');
     return Response.json({ error: 'Missing url' }, { status: 400 });
   }
   const userId = await getUserIdFromSession();
   if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+  let feedTitle: string | undefined = undefined;
   // Emulate browser headers for RSS fetch
   try {
     const res = await fetch(url, {
@@ -56,11 +58,27 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: `Feed returned HTTP ${res.status}` }, { status: 400 });
     }
     const xml = await res.text();
+    let parsed: any;
     try {
-      await parser.parseString(xml);
+      parsed = await parser.parseString(xml);
+      // Try to extract title from RSS or Atom
+      feedTitle = parsed?.title || parsed?.feed?.title || parsed?.rss?.channel?.title;
+      if (feedTitle && typeof feedTitle === 'object' && feedTitle !== null) {
+        if (typeof (feedTitle as any)._text === 'string') {
+          feedTitle = (feedTitle as any)._text;
+        } else if (typeof (feedTitle as any).value === 'string') {
+          feedTitle = (feedTitle as any).value;
+        } else {
+          const values = Object.values(feedTitle);
+          feedTitle = values.length > 0 && typeof values[0] === 'string' ? values[0] : undefined;
+        }
+      }
+      if (!feedTitle) {
+        // Fallback: use domain name
+        feedTitle = new URL(url).hostname.replace(/^www\./, '');
+      }
     } catch (parseErr) {
       console.warn('POST /api/feeds: RSS parse error for', url, parseErr);
-      // Extract error message from parseErr
       let errorMsg: string;
       if (parseErr instanceof Error) {
         errorMsg = parseErr.message;
@@ -71,16 +89,14 @@ export async function POST(req: NextRequest) {
     }
   } catch (err) {
     console.error('POST /api/feeds: Fetch error for', url, err);
-    // Extract error message
     const fetchErrorMsg = err instanceof Error ? err.message : String(err);
     return Response.json({ error: `Invalid or unreachable RSS feed: ${fetchErrorMsg}` }, { status: 400 });
   }
   try {
-    const feed = await prisma.feed.create({ data: { userId, url, title } });
+    const feed = await prisma.feed.create({ data: { userId, url, title: feedTitle } });
     return Response.json(feed, { status: 201 });
   } catch (error) {
     console.error('POST /api/feeds: DB error for', url, error);
-    // Extract error message
     const dbErrorMsg = error instanceof Error ? error.message : String(error);
     return Response.json({ error: `Failed to add feed: ${dbErrorMsg}` }, { status: 500 });
   }
@@ -99,7 +115,6 @@ export async function DELETE(req: NextRequest) {
     return new Response(null, { status: 204 });
   } catch (error) {
     console.error('DELETE /api/feeds: DB error for', id, error);
-    // Extract error message
     const deleteErrorMsg = error instanceof Error ? error.message : String(error);
     return Response.json({ error: `Failed to delete feed: ${deleteErrorMsg}` }, { status: 500 });
   }
