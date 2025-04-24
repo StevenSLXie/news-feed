@@ -1,6 +1,6 @@
 import Parser from 'rss-parser';
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 import { prisma } from "../../../lib/prisma";
 
 const parser = new Parser();
@@ -17,7 +17,7 @@ async function getUserIdFromSession() {
 export async function GET() {
   try {
     const userId = await getUserIdFromSession();
-    if (!userId) return new Response("Unauthorized", { status: 401 });
+    if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
     // Get all feeds for the current user
     const feeds = await prisma.feed.findMany({
       where: { userId },

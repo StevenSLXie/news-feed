@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from "../../../lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route"; // adjust path as needed
+import { authOptions } from "@/lib/authOptions";
 
 async function getUserIdFromSession() {
   const session = await getServerSession(authOptions);
@@ -15,7 +15,7 @@ async function getUserIdFromSession() {
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return new Response("Unauthorized", { status: 401 });
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 }
 
@@ -28,7 +28,7 @@ export async function POST() {
     const { link, read, saved, title, feedId, published } = await NextRequest.json();
     if (!link || !feedId) return Response.json({ error: 'Missing required fields' }, { status: 400 });
     const userId = await getUserIdFromSession();
-    if (!userId) return new Response("Unauthorized", { status: 401 });
+    if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     const result = await prisma.article.upsert({
       where: { userId_link: { userId, link } },
       update: { read, saved },

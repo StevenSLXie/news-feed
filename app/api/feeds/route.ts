@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from "../../../lib/prisma";
 import Parser from 'rss-parser';
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 
 const parser = new Parser();
 
@@ -18,7 +18,7 @@ async function getUserIdFromSession() {
 export async function GET() {
   try {
     const userId = await getUserIdFromSession();
-    if (!userId) return new Response("Unauthorized", { status: 401 });
+    if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     const feeds = await prisma.feed.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' }
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: 'Missing url' }, { status: 400 });
   }
   const userId = await getUserIdFromSession();
-  if (!userId) return new Response("Unauthorized", { status: 401 });
+  if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   // Emulate browser headers for RSS fetch
   try {
     const res = await fetch(url, {
@@ -82,7 +82,7 @@ export async function DELETE(req: NextRequest) {
     return Response.json({ error: 'Missing id' }, { status: 400 });
   }
   const userId = await getUserIdFromSession();
-  if (!userId) return new Response("Unauthorized", { status: 401 });
+  if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     await prisma.feed.delete({ where: { id, userId } });
     return new Response(null, { status: 204 });

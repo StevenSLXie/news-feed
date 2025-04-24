@@ -1,7 +1,7 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, Response } from 'next/server';
 import pool from '../../../lib/db';
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route"; // adjust path as needed
+import { authOptions } from "@/lib/authOptions";
 import { prisma } from "../../../lib/prisma";
 
 async function getUserIdFromSession() {
@@ -17,18 +17,18 @@ async function getUserIdFromSession() {
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return new Response("Unauthorized", { status: 401 });
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 }
 
 export async function POST() {
   try {
     const { articles } = await NextRequest.json();
-    if (!Array.isArray(articles)) return Response.json({}, { status: 400 });
+    if (!Array.isArray(articles)) return Response.json({ error: "Bad Request" }, { status: 400 });
     const links = articles.map(a => a.link).filter(Boolean);
     if (links.length === 0) return Response.json({}, { status: 200 });
     const userId = await getUserIdFromSession();
-    if (!userId) return new Response("Unauthorized", { status: 401 });
+    if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
     const { rows } = await pool.query(
       `SELECT link, read, saved FROM articles WHERE user_id = $1 AND link = ANY($2)`,
       [userId, links]
@@ -39,6 +39,6 @@ export async function POST() {
     }
     return Response.json(stateMap, { status: 200 });
   } catch {
-    return Response.json({}, { status: 500 });
+    return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
