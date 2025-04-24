@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     try {
       parsed = await parser.parseString(xml) as Record<string, unknown>;
       // Try to extract title from RSS or Atom
-      let candidateTitle = parsed?.title
+      const candidateTitle = parsed?.title
         || (parsed?.feed && (parsed.feed as Record<string, unknown>).title)
         || (parsed?.rss && (parsed.rss as Record<string, unknown>).channel && ((parsed.rss as Record<string, unknown>).channel as Record<string, unknown>).title);
       if (candidateTitle && typeof candidateTitle === 'object' && candidateTitle !== null) {
