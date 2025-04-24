@@ -1,4 +1,3 @@
-import { NextRequest } from 'next/server';
 import Parser from 'rss-parser';
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
