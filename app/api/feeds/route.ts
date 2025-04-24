@@ -58,20 +58,24 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: `Feed returned HTTP ${res.status}` }, { status: 400 });
     }
     const xml = await res.text();
-    let parsed: any;
+    let parsed: Record<string, unknown>;
     try {
-      parsed = await parser.parseString(xml);
+      parsed = await parser.parseString(xml) as Record<string, unknown>;
       // Try to extract title from RSS or Atom
-      feedTitle = parsed?.title || parsed?.feed?.title || parsed?.rss?.channel?.title;
-      if (feedTitle && typeof feedTitle === 'object' && feedTitle !== null) {
-        if (typeof (feedTitle as any)._text === 'string') {
-          feedTitle = (feedTitle as any)._text;
-        } else if (typeof (feedTitle as any).value === 'string') {
-          feedTitle = (feedTitle as any).value;
+      let candidateTitle = parsed?.title
+        || (parsed?.feed && (parsed.feed as Record<string, unknown>).title)
+        || (parsed?.rss && (parsed.rss as Record<string, unknown>).channel && ((parsed.rss as Record<string, unknown>).channel as Record<string, unknown>).title);
+      if (candidateTitle && typeof candidateTitle === 'object' && candidateTitle !== null) {
+        if (typeof (candidateTitle as { _text?: string })._text === 'string') {
+          feedTitle = (candidateTitle as { _text: string })._text;
+        } else if (typeof (candidateTitle as { value?: string }).value === 'string') {
+          feedTitle = (candidateTitle as { value: string }).value;
         } else {
-          const values = Object.values(feedTitle);
+          const values = Object.values(candidateTitle);
           feedTitle = values.length > 0 && typeof values[0] === 'string' ? values[0] : undefined;
         }
+      } else if (typeof candidateTitle === 'string') {
+        feedTitle = candidateTitle;
       }
       if (!feedTitle) {
         // Fallback: use domain name
