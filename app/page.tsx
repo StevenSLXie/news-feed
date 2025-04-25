@@ -206,7 +206,6 @@ export default function Home() {
         </button>
       </form>
       {error && <div className="text-red-600 mb-4 text-sm">{error}</div>}
-      {loading && <div className="text-gray-500 mb-4">Loading...</div>}
       <h2 className="mt-8 text-lg font-medium cursor-pointer select-none flex items-center gap-2" onClick={() => setFeedsCollapsed(c => !c)}>
         Subscribed Feeds
         <span className="text-gray-400 text-base">{feedsCollapsed ? '▼' : '▲'}</span>
