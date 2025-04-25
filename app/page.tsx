@@ -235,7 +235,7 @@ export default function Home() {
           articles.map((article, idx) => (
             <li key={idx} className="mb-5 pb-4 border-b border-gray-100 bg-white rounded-lg shadow-sm px-3 py-3 flex flex-col gap-1 sm:gap-0 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex-1 min-w-0">
-                <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline truncate">{article.title}</a>
+                <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline whitespace-normal break-words">{article.title}</a>
                 <div className="text-xs text-gray-500 mt-0.5 truncate">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
               </div>
               <div className="flex gap-2 mt-2 sm:mt-0 sm:ml-4">
