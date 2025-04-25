@@ -28,6 +28,8 @@ export default function Home() {
   const [loadingArticles, setLoadingArticles] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [feedsCollapsed, setFeedsCollapsed] = useState(true);
+  const [tab, setTab] = useState<'all' | 'bySource'>('all');
+  const [expandedFeedId, setExpandedFeedId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchFeeds();
@@ -222,30 +224,87 @@ export default function Home() {
         </ul>
       )}
       <h2 className="font-semibold text-xl mt-6 mb-2 flex items-center gap-3">
-        Articles
+        <div className="flex gap-2">
+          <button
+            className={`px-3 py-1.5 rounded font-medium text-sm transition border ${tab === 'all' ? 'bg-black text-white border-black' : 'bg-white text-gray-700 border-gray-300 hover:bg-neutral-100'}`}
+            onClick={() => setTab('all')}
+          >
+            All
+          </button>
+          <button
+            className={`px-3 py-1.5 rounded font-medium text-sm transition border ${tab === 'bySource' ? 'bg-black text-white border-black' : 'bg-white text-gray-700 border-gray-300 hover:bg-neutral-100'}`}
+            onClick={() => setTab('bySource')}
+          >
+            By Source
+          </button>
+        </div>
+        <span className="ml-4">Articles</span>
         <button onClick={fetchArticles} className="ml-2 px-3 py-1.5 rounded border border-black/10 bg-black text-white text-sm font-medium hover:bg-neutral-800 transition shadow-sm">Refresh</button>
       </h2>
-      <ul className="list-none p-0">
-        {loadingArticles ? (
-          <li className="text-gray-400">Loading articles...</li>
-        ) : articles.length === 0 ? (
-          <li className="text-gray-400">No articles to show.</li>
-        ) : (
-          articles.map((article, idx) => (
-            <li key={idx} className="mb-5 pb-4 border-b border-gray-100 bg-white rounded-lg shadow-sm px-3 py-3 flex flex-col gap-1 sm:gap-0 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex-1 min-w-0">
-                <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline whitespace-normal break-words">{article.title}</a>
-                <div className="text-xs text-gray-500 mt-0.5 truncate">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
-              </div>
-              <div className="flex gap-2 mt-2 sm:mt-0 sm:ml-4">
-                <button onClick={() => toggleRead(article)} className={`text-xs px-3 py-1 rounded border ${article.read ? 'border-green-400 text-green-700 bg-green-50' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-green-100 transition`}>{article.read ? 'Read' : 'Mark as Read'}</button>
-                <button onClick={() => toggleSaved(article)} className={`text-xs px-3 py-1 rounded border ${article.saved ? 'border-black text-white bg-black' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-neutral-800 hover:text-white transition`}>{article.saved ? 'Saved' : 'Save'}</button>
-                <button onClick={() => removeArticle(article)} className="text-xs px-3 py-1 rounded border border-red-300 text-red-500 bg-white hover:bg-red-50 transition">Remove</button>
-              </div>
-            </li>
-          ))
-        )}
-      </ul>
+      {tab === 'all' && (
+        <ul className="list-none p-0">
+          {loadingArticles ? (
+            <li className="text-gray-400">Loading articles...</li>
+          ) : articles.length === 0 ? (
+            <li className="text-gray-400">No articles to show.</li>
+          ) : (
+            articles.map((article, idx) => (
+              <li key={idx} className="mb-5 pb-4 border-b border-gray-100 bg-white rounded-lg shadow-sm px-3 py-3 flex flex-col gap-1 sm:gap-0 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex-1 min-w-0">
+                  <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline whitespace-normal break-words">{article.title}</a>
+                  <div className="text-xs text-gray-500 mt-0.5 truncate">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
+                </div>
+                <div className="flex gap-2 mt-2 sm:mt-0 sm:ml-4">
+                  <button onClick={() => toggleRead(article)} className={`text-xs px-3 py-1 rounded border ${article.read ? 'border-green-400 text-green-700 bg-green-50' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-green-100 transition`}>{article.read ? 'Read' : 'Mark as Read'}</button>
+                  <button onClick={() => toggleSaved(article)} className={`text-xs px-3 py-1 rounded border ${article.saved ? 'border-black text-white bg-black' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-neutral-800 hover:text-white transition`}>{article.saved ? 'Saved' : 'Save'}</button>
+                  <button onClick={() => removeArticle(article)} className="text-xs px-3 py-1 rounded border border-red-300 text-red-500 bg-white hover:bg-red-50 transition">Remove</button>
+                </div>
+              </li>
+            ))
+          )}
+        </ul>
+      )}
+      {tab === 'bySource' && (
+        <ul className="list-none p-0">
+          {feeds.length === 0 ? (
+            <li className="text-gray-400">No feeds subscribed.</li>
+          ) : (
+            feeds.map(feed => {
+              const feedArticles = articles.filter(a => a.feedId === feed.id);
+              return (
+                <li key={feed.id} className="mb-4">
+                  <button
+                    className="w-full flex justify-between items-center px-4 py-2 rounded bg-white border border-gray-200 shadow-sm text-left font-medium text-gray-900 hover:bg-neutral-50 transition"
+                    onClick={() => setExpandedFeedId(expandedFeedId === feed.id ? null : feed.id)}
+                  >
+                    <span className="truncate">{feed.title || feed.url}</span>
+                    <span className="ml-2 text-xs text-gray-400">{expandedFeedId === feed.id ? '▲' : '▼'}</span>
+                  </button>
+                  {expandedFeedId === feed.id && (
+                    <ul className="mt-2 ml-2 border-l border-gray-200 pl-4">
+                      {feedArticles.length === 0 ? (
+                        <li className="text-gray-400 text-sm">No articles from this source.</li>
+                      ) : (
+                        feedArticles.map((article, idx) => (
+                          <li key={idx} className="mb-3 pb-2 border-b border-gray-50 bg-white rounded px-2 py-2 flex flex-col gap-1">
+                            <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline whitespace-normal break-words">{article.title}</a>
+                            <div className="text-xs text-gray-500 mt-0.5 truncate">{article.published ? new Date(article.published).toLocaleString() : ''}</div>
+                            <div className="flex gap-2 mt-1">
+                              <button onClick={() => toggleRead(article)} className={`text-xs px-3 py-1 rounded border ${article.read ? 'border-green-400 text-green-700 bg-green-50' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-green-100 transition`}>{article.read ? 'Read' : 'Mark as Read'}</button>
+                              <button onClick={() => toggleSaved(article)} className={`text-xs px-3 py-1 rounded border ${article.saved ? 'border-black text-white bg-black' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-neutral-800 hover:text-white transition`}>{article.saved ? 'Saved' : 'Save'}</button>
+                              <button onClick={() => removeArticle(article)} className="text-xs px-3 py-1 rounded border border-red-300 text-red-500 bg-white hover:bg-red-50 transition">Remove</button>
+                            </div>
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  )}
+                </li>
+              );
+            })
+          )}
+        </ul>
+      )}
     </main>
   );
 }
