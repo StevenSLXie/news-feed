@@ -2,6 +2,6 @@
   { "name": "NY Times", "url": "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml" },
   { "name": "BBC World", "url": "http://feeds.bbci.co.uk/news/world/rss.xml" },
   { "name": "Reuters Top News", "url": "http://feeds.reuters.com/reuters/topNews" },
-  { "name": "The Verge", "url": "https://www.theverge.com/rss/index.xml" },
-  { "name": "Hacker News", "url": "https://hnrss.org/frontpage" }
+  { "name": "Hacker News", "url": "https://hnrss.org/frontpage" },
+  { "name": "SCMP China Politics", "url": "https://www.scmp.com/rss/318198/feed"}
 ]

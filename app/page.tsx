@@ -236,15 +236,27 @@ export default function Home() {
                   <button
                     className="px-3 py-1.5 rounded bg-black text-white font-medium hover:bg-neutral-800 transition border border-black/10 shadow-sm text-xs"
                     onClick={async () => {
-                      setNewFeedUrl(feed.url);
-                      await addFeed({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>);
                       setHiddenRecommended(prev => [...prev, feed.url]);
+                      setError(null);
+                      setLoading(true);
+                      try {
+                        const res = await fetch('/api/feeds', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ url: feed.url }),
+                          credentials: 'include',
+                        });
+                        if (!res.ok) throw new Error();
+                        setNewFeedUrl('');
+                        await fetchFeeds();
+                        await fetchArticles();
+                      } catch {
+                        setError('Failed to add feed');
+                      } finally {
+                        setLoading(false);
+                      }
                     }}
                   >Subscribe</button>
-                  <button
-                    className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 font-medium hover:bg-neutral-100 transition text-xs"
-                    onClick={() => setHiddenRecommended(prev => [...prev, feed.url])}
-                  >Remove</button>
                 </div>
               </li>
             ))}
