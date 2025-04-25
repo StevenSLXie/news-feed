@@ -198,10 +198,10 @@ export default function Home() {
           placeholder="Add RSS feed URL..."
           value={newFeedUrl}
           onChange={e => setNewFeedUrl(e.target.value)}
-          className="flex-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-200 text-base bg-white"
+          className="flex-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-neutral-400 text-base bg-white placeholder-gray-400"
           required
         />
-        <button type="submit" className="px-5 py-2 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition disabled:opacity-60" disabled={loading}>
+        <button type="submit" className="px-5 py-2 rounded bg-black text-white font-medium hover:bg-neutral-800 transition disabled:opacity-60 shadow-sm border border-black/10" disabled={loading}>
           Add
         </button>
       </form>
@@ -223,7 +223,7 @@ export default function Home() {
       )}
       <h2 className="font-semibold text-xl mt-6 mb-2 flex items-center gap-3">
         Articles
-        <button onClick={fetchArticles} className="ml-2 px-3 py-1.5 rounded border border-gray-300 bg-gray-100 text-gray-700 text-sm hover:bg-gray-200 transition">Refresh</button>
+        <button onClick={fetchArticles} className="ml-2 px-3 py-1.5 rounded border border-black/10 bg-black text-white text-sm font-medium hover:bg-neutral-800 transition shadow-sm">Refresh</button>
       </h2>
       <ul className="list-none p-0">
         {loadingArticles ? (
@@ -239,7 +239,7 @@ export default function Home() {
               </div>
               <div className="flex gap-2 mt-2 sm:mt-0 sm:ml-4">
                 <button onClick={() => toggleRead(article)} className={`text-xs px-3 py-1 rounded border ${article.read ? 'border-green-400 text-green-700 bg-green-50' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-green-100 transition`}>{article.read ? 'Read' : 'Mark as Read'}</button>
-                <button onClick={() => toggleSaved(article)} className={`text-xs px-3 py-1 rounded border ${article.saved ? 'border-blue-400 text-blue-700 bg-blue-50' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-blue-100 transition`}>{article.saved ? 'Saved' : 'Save'}</button>
+                <button onClick={() => toggleSaved(article)} className={`text-xs px-3 py-1 rounded border ${article.saved ? 'border-black text-white bg-black' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-neutral-800 hover:text-white transition`}>{article.saved ? 'Saved' : 'Save'}</button>
                 <button onClick={() => removeArticle(article)} className="text-xs px-3 py-1 rounded border border-red-300 text-red-500 bg-white hover:bg-red-50 transition">Remove</button>
               </div>
             </li>
