@@ -25,6 +25,7 @@ export default function Home() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [newFeedUrl, setNewFeedUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingArticles, setLoadingArticles] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [feedsCollapsed, setFeedsCollapsed] = useState(true);
 
@@ -49,18 +50,28 @@ export default function Home() {
 
   async function fetchArticles() {
     setError(null);
+    setLoadingArticles(true);
     try {
       const res = await fetch('/api/articles');
       const data = await res.json();
-      // Try to fetch read/saved state for each article
       const stateRes = await fetch('/api/article-state-bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ articles: data }), credentials: 'include' });
       let stateMap: Record<string, {read: boolean, saved: boolean}> = {};
       if (stateRes.ok) {
         stateMap = await stateRes.json();
       }
-      setArticles(data.map((a: Article) => ({ ...a, ...stateMap[a.link || ''] }))); 
+      setArticles((prev: Article[]) => {
+        const prevLinks = new Set(prev.map(a => a.link));
+        const newArticles = data.filter((a: Article) => !prevLinks.has(a.link || ''));
+        const updated = [...prev];
+        for (const a of newArticles) {
+          updated.push({ ...a, ...stateMap[a.link || ''] });
+        }
+        return updated.map(a => ({ ...a, ...stateMap[a.link || ''] }));
+      });
     } catch {
       setError('Failed to load articles');
+    } finally {
+      setLoadingArticles(false);
     }
   }
 
@@ -144,7 +155,6 @@ export default function Home() {
         body: JSON.stringify({ link: article.link }),
         credentials: 'include',
       });
-      // Remove the article from local state without refreshing
       setArticles(prev => prev.filter(a => a.link !== article.link));
     } catch {
       // error intentionally ignored
@@ -243,20 +253,27 @@ export default function Home() {
           {feeds.length === 0 && <li style={{ color: '#888' }}>No feeds subscribed.</li>}
         </ul>
       )}
-      <h2 style={{ fontWeight: 500, fontSize: 22, margin: '16px 0 8px' }}>Articles</h2>
+      <h2 style={{ fontWeight: 500, fontSize: 22, margin: '16px 0 8px' }}>Articles
+        <button onClick={fetchArticles} style={{ marginLeft: 16, padding: '2px 10px', borderRadius: 4, border: '1px solid #ccc', background: '#f5f5f5', color: '#333', fontSize: 13, cursor: 'pointer' }}>Refresh</button>
+      </h2>
       <ul style={{ listStyle: 'none', padding: 0 }}>
-        {articles.map((article, idx) => (
-          <li key={idx} style={{ marginBottom: 18, paddingBottom: 14, borderBottom: '1px solid #eee', background: article.read ? '#f7f7f7' : undefined }}>
-            <a href={article.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 17, fontWeight: 500, color: '#1a0dab', textDecoration: 'none' }}>{article.title}</a>
-            <div style={{ fontSize: 13, color: '#555', marginTop: 2 }}>{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
-            <div style={{ marginTop: 4, display: 'flex', gap: 10 }}>
-              <button onClick={() => toggleRead(article)} style={{ fontSize: 12, color: article.read ? '#0a0' : '#888', background: 'none', border: '1px solid #ccc', borderRadius: 4, padding: '2px 8px', cursor: 'pointer' }}>{article.read ? 'Read' : 'Mark as Read'}</button>
-              <button onClick={() => toggleSaved(article)} style={{ fontSize: 12, color: article.saved ? '#09c' : '#888', background: 'none', border: '1px solid #ccc', borderRadius: 4, padding: '2px 8px', cursor: 'pointer' }}>{article.saved ? 'Saved' : 'Save'}</button>
-              <button onClick={() => removeArticle(article)} style={{ fontSize: 12, color: '#c00', background: 'none', border: '1px solid #ccc', borderRadius: 4, padding: '2px 8px', cursor: 'pointer' }}>Remove</button>
-            </div>
-          </li>
-        ))}
-        {articles.length === 0 && <li style={{ color: '#888' }}>No articles to show.</li>}
+        {loadingArticles ? (
+          <li style={{ color: '#888' }}>Loading articles...</li>
+        ) : articles.length === 0 ? (
+          <li style={{ color: '#888' }}>No articles to show.</li>
+        ) : (
+          articles.map((article, idx) => (
+            <li key={idx} style={{ marginBottom: 18, paddingBottom: 14, borderBottom: '1px solid #eee', background: article.read ? '#f7f7f7' : undefined }}>
+              <a href={article.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 17, fontWeight: 500, color: '#1a0dab', textDecoration: 'none' }}>{article.title}</a>
+              <div style={{ fontSize: 13, color: '#555', marginTop: 2 }}>{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
+              <div style={{ marginTop: 4, display: 'flex', gap: 10 }}>
+                <button onClick={() => toggleRead(article)} style={{ fontSize: 12, color: article.read ? '#0a0' : '#888', background: 'none', border: '1px solid #ccc', borderRadius: 4, padding: '2px 8px', cursor: 'pointer' }}>{article.read ? 'Read' : 'Mark as Read'}</button>
+                <button onClick={() => toggleSaved(article)} style={{ fontSize: 12, color: article.saved ? '#09c' : '#888', background: 'none', border: '1px solid #ccc', borderRadius: 4, padding: '2px 8px', cursor: 'pointer' }}>{article.saved ? 'Saved' : 'Save'}</button>
+                <button onClick={() => removeArticle(article)} style={{ fontSize: 12, color: '#c00', background: 'none', border: '1px solid #ccc', borderRadius: 4, padding: '2px 8px', cursor: 'pointer' }}>Remove</button>
+              </div>
+            </li>
+          ))
+        )}
       </ul>
     </main>
   );
