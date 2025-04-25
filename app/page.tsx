@@ -167,109 +167,81 @@ export default function Home() {
 
   if (!session) {
     return (
-      <main style={{ maxWidth: 600, margin: '40px auto', fontFamily: 'sans-serif' }}>
-        <h1 style={{ fontWeight: 500, marginBottom: 24 }}>My News Feeds</h1>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <button onClick={() => signIn('google')} style={{
-          height: 48,
-          minWidth: 240,
-          padding: '10px 0',
-          borderRadius: 4,
-          border: '1px solid #ccc',
-          background: '#fff',
-          color: '#222',
-          fontWeight: 500,
-          fontSize: 16,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8
-        }}>
-          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style={{ width: 20, height: 20 }} />
-          Sign in with Google
-        </button>
-        <button onClick={() => signIn('github')} style={{
-          height: 48,
-          minWidth: 240,
-          padding: '10px 0',
-          borderRadius: 4,
-          border: 'none',
-          background: '#24292f',
-          color: '#fff',
-          fontWeight: 500,
-          fontSize: 16,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8
-        }}>
-          Sign in with GitHub
-        </button>
+      <main className="max-w-xl mx-auto px-3 sm:px-6 py-6 font-sans">
+        <h1 className="font-semibold text-2xl tracking-tight text-gray-900">My News Feeds</h1>
+        <div className="text-sm text-gray-600 flex items-center gap-3">
+          <button onClick={() => signIn('google')} className="text-gray-700 bg-gray-100 border border-gray-300 rounded px-3 py-1.5 hover:bg-gray-200 transition">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5 mr-2" />
+            Sign in with Google
+          </button>
+          <button onClick={() => signIn('github')} className="text-gray-700 bg-gray-100 border border-gray-300 rounded px-3 py-1.5 hover:bg-gray-200 transition">
+            <img src="https://www.svgrepo.com/show/475656/github.svg" alt="GitHub" className="w-5 h-5 mr-2" />
+            Sign in with GitHub
+          </button>
         </div>
       </main>
     );
   }
 
   return (
-    <main style={{ maxWidth: 600, margin: '40px auto', fontFamily: 'sans-serif' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h1 style={{ fontWeight: 500 }}>My News Feeds</h1>
-        <div style={{ fontSize: 15, color: '#555', display: 'flex', alignItems: 'center', gap: 12 }}>
+    <main className="max-w-xl mx-auto px-3 sm:px-6 py-6 font-sans">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <h1 className="font-semibold text-2xl tracking-tight text-gray-900">My News Feeds</h1>
+        <div className="text-sm text-gray-600 flex items-center gap-3">
           <span>Signed in as {session.user?.email}</span>
-          <button onClick={() => signOut()} style={{ fontSize: 14, padding: '4px 12px', borderRadius: 4, border: '1px solid #ccc', background: '#eee', color: '#444', cursor: 'pointer' }}>Sign out</button>
+          <button onClick={() => signOut()} className="text-gray-700 bg-gray-100 border border-gray-300 rounded px-3 py-1.5 hover:bg-gray-200 transition">Sign out</button>
         </div>
       </div>
-      <form onSubmit={addFeed} style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+      <form onSubmit={addFeed} className="flex gap-2 mb-8">
         <input
           type="url"
           placeholder="Add RSS feed URL..."
           value={newFeedUrl}
           onChange={e => setNewFeedUrl(e.target.value)}
-          style={{ flex: 1, padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
+          className="flex-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-200 text-base bg-white"
           required
         />
-        <button type="submit" style={{ padding: '8px 16px', borderRadius: 4, border: 'none', background: '#222', color: '#fff' }} disabled={loading}>
+        <button type="submit" className="px-5 py-2 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition disabled:opacity-60" disabled={loading}>
           Add
         </button>
       </form>
-      {error && <div style={{ color: 'red', marginBottom: 16 }}>{error}</div>}
-      {loading && <div>Loading...</div>}
-      <h2 style={{ marginTop: 32, fontSize: 18, cursor: 'pointer', userSelect: 'none' }} onClick={() => setFeedsCollapsed(c => !c)}>
+      {error && <div className="text-red-600 mb-4 text-sm">{error}</div>}
+      {loading && <div className="text-gray-500 mb-4">Loading...</div>}
+      <h2 className="mt-8 text-lg font-medium cursor-pointer select-none flex items-center gap-2" onClick={() => setFeedsCollapsed(c => !c)}>
         Subscribed Feeds
-        <span style={{ marginLeft: 8, fontSize: 14, color: '#888' }}>{feedsCollapsed ? '▼' : '▲'}</span>
+        <span className="text-gray-400 text-base">{feedsCollapsed ? '▼' : '▲'}</span>
       </h2>
       {!feedsCollapsed && (
-        <ul style={{ paddingLeft: 0, listStyle: 'none', marginBottom: 24 }}>
+        <ul className="pl-0 list-none mb-8 divide-y divide-gray-100">
           {feeds.map(feed => (
-            <li key={feed.id} style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {feed.title ? feed.title : feed.url}
-              </span>
-              <button onClick={() => removeFeed(feed.id)} style={{ marginLeft: 8, color: '#c00', background: 'none', border: 'none', fontSize: 18, cursor: 'pointer' }} title="Unsubscribe">×</button>
+            <li key={feed.id} className="flex items-center py-2">
+              <span className="flex-1 truncate text-gray-800">{feed.title ? feed.title : feed.url}</span>
+              <button onClick={() => removeFeed(feed.id)} className="ml-2 text-red-500 bg-transparent border-none text-lg hover:bg-red-50 rounded-full w-8 h-8 flex items-center justify-center transition" title="Unsubscribe">×</button>
             </li>
           ))}
-          {feeds.length === 0 && <li style={{ color: '#888' }}>No feeds subscribed.</li>}
+          {feeds.length === 0 && <li className="text-gray-400 py-2">No feeds subscribed.</li>}
         </ul>
       )}
-      <h2 style={{ fontWeight: 500, fontSize: 22, margin: '16px 0 8px' }}>Articles
-        <button onClick={fetchArticles} style={{ marginLeft: 16, padding: '2px 10px', borderRadius: 4, border: '1px solid #ccc', background: '#f5f5f5', color: '#333', fontSize: 13, cursor: 'pointer' }}>Refresh</button>
+      <h2 className="font-semibold text-xl mt-6 mb-2 flex items-center gap-3">
+        Articles
+        <button onClick={fetchArticles} className="ml-2 px-3 py-1.5 rounded border border-gray-300 bg-gray-100 text-gray-700 text-sm hover:bg-gray-200 transition">Refresh</button>
       </h2>
-      <ul style={{ listStyle: 'none', padding: 0 }}>
+      <ul className="list-none p-0">
         {loadingArticles ? (
-          <li style={{ color: '#888' }}>Loading articles...</li>
+          <li className="text-gray-400">Loading articles...</li>
         ) : articles.length === 0 ? (
-          <li style={{ color: '#888' }}>No articles to show.</li>
+          <li className="text-gray-400">No articles to show.</li>
         ) : (
           articles.map((article, idx) => (
-            <li key={idx} style={{ marginBottom: 18, paddingBottom: 14, borderBottom: '1px solid #eee', background: article.read ? '#f7f7f7' : undefined }}>
-              <a href={article.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 17, fontWeight: 500, color: '#1a0dab', textDecoration: 'none' }}>{article.title}</a>
-              <div style={{ fontSize: 13, color: '#555', marginTop: 2 }}>{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
-              <div style={{ marginTop: 4, display: 'flex', gap: 10 }}>
-                <button onClick={() => toggleRead(article)} style={{ fontSize: 12, color: article.read ? '#0a0' : '#888', background: 'none', border: '1px solid #ccc', borderRadius: 4, padding: '2px 8px', cursor: 'pointer' }}>{article.read ? 'Read' : 'Mark as Read'}</button>
-                <button onClick={() => toggleSaved(article)} style={{ fontSize: 12, color: article.saved ? '#09c' : '#888', background: 'none', border: '1px solid #ccc', borderRadius: 4, padding: '2px 8px', cursor: 'pointer' }}>{article.saved ? 'Saved' : 'Save'}</button>
-                <button onClick={() => removeArticle(article)} style={{ fontSize: 12, color: '#c00', background: 'none', border: '1px solid #ccc', borderRadius: 4, padding: '2px 8px', cursor: 'pointer' }}>Remove</button>
+            <li key={idx} className="mb-5 pb-4 border-b border-gray-100 bg-white rounded-lg shadow-sm px-3 py-3 flex flex-col gap-1 sm:gap-0 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex-1 min-w-0">
+                <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline truncate">{article.title}</a>
+                <div className="text-xs text-gray-500 mt-0.5 truncate">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
+              </div>
+              <div className="flex gap-2 mt-2 sm:mt-0 sm:ml-4">
+                <button onClick={() => toggleRead(article)} className={`text-xs px-3 py-1 rounded border ${article.read ? 'border-green-400 text-green-700 bg-green-50' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-green-100 transition`}>{article.read ? 'Read' : 'Mark as Read'}</button>
+                <button onClick={() => toggleSaved(article)} className={`text-xs px-3 py-1 rounded border ${article.saved ? 'border-blue-400 text-blue-700 bg-blue-50' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-blue-100 transition`}>{article.saved ? 'Saved' : 'Save'}</button>
+                <button onClick={() => removeArticle(article)} className="text-xs px-3 py-1 rounded border border-red-300 text-red-500 bg-white hover:bg-red-50 transition">Remove</button>
               </div>
             </li>
           ))
