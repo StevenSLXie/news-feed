@@ -29,12 +29,12 @@ export async function GET() {
       select: { link: true }
     });
     const removedLinks = new Set(removed.map((r: { link: string }) => r.link));
-    let articles: { feedId: number, feedTitle: string, title: string, link: string, published: string | null }[] = [];
+    let articles: { feedId: string, feedTitle: string, title: string, link: string, published: string | null }[] = [];
     for (const feed of feeds) {
       try {
         const parsed = await parser.parseURL(feed.url);
         const items = (parsed.items || []).map(item => ({
-          feedId: Number(feed.id),
+          feedId: String(feed.id),
           feedTitle: feed.title || '',
           title: item.title ?? '',
           link: item.link ?? '',
