@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSession, signIn, signOut } from "next-auth/react";
+import { useRecommendedFeeds } from "./hooks/useRecommendedFeeds";
 
 interface Feed {
   id: string;
@@ -30,11 +31,27 @@ export default function Home() {
   const [feedsCollapsed, setFeedsCollapsed] = useState(true);
   const [tab, setTab] = useState<'all' | 'bySource'>('all');
   const [expandedFeedId, setExpandedFeedId] = useState<string | null>(null);
+  const recommendedFeeds = useRecommendedFeeds();
+  const [dismissedRecommended, setDismissedRecommended] = useState(false);
+  const [hiddenRecommended, setHiddenRecommended] = useState<string[]>([]);
 
   useEffect(() => {
     fetchFeeds();
     fetchArticles();
   }, []);
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem('dismissedRecommendedFeeds');
+    if (dismissed === 'true') {
+      setDismissedRecommended(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (dismissedRecommended) {
+      localStorage.setItem('dismissedRecommendedFeeds', 'true');
+    }
+  }, [dismissedRecommended]);
 
   async function fetchFeeds() {
     setLoading(true);
@@ -208,6 +225,36 @@ export default function Home() {
         </button>
       </form>
       {error && <div className="text-red-600 mb-4 text-sm">{error}</div>}
+      {feeds.length === 0 && !dismissedRecommended && (
+        <div className="mb-8 p-5 rounded-lg bg-white border border-gray-200 shadow-sm">
+          <div className="font-semibold mb-2 text-lg">Recommended Feeds</div>
+          <ul className="mb-4">
+            {recommendedFeeds.filter(f => !hiddenRecommended.includes(f.url)).map(feed => (
+              <li key={feed.url} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-b-0">
+                <span className="font-medium text-gray-900">{feed.name}</span>
+                <div className="flex gap-2">
+                  <button
+                    className="px-3 py-1.5 rounded bg-black text-white font-medium hover:bg-neutral-800 transition border border-black/10 shadow-sm text-xs"
+                    onClick={async () => {
+                      setNewFeedUrl(feed.url);
+                      await addFeed({ preventDefault: () => {} } as any);
+                      setHiddenRecommended(prev => [...prev, feed.url]);
+                    }}
+                  >Subscribe</button>
+                  <button
+                    className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 font-medium hover:bg-neutral-100 transition text-xs"
+                    onClick={() => setHiddenRecommended(prev => [...prev, feed.url])}
+                  >Remove</button>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <button
+            className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-600 font-medium hover:bg-neutral-100 transition text-xs"
+            onClick={() => setDismissedRecommended(true)}
+          >Dismiss All</button>
+        </div>
+      )}
       <h2 className="mt-8 text-lg font-medium cursor-pointer select-none flex items-center gap-2" onClick={() => setFeedsCollapsed(c => !c)}>
         Subscribed Feeds
         <span className="text-gray-400 text-base">{feedsCollapsed ? '▼' : '▲'}</span>
