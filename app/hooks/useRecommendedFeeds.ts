@@ -10,8 +10,14 @@ export function useRecommendedFeeds(): RecommendedFeed[] {
   if (Array.isArray(recommendedFeedsRaw)) {
     return recommendedFeedsRaw;
   }
-  if (recommendedFeedsRaw && typeof recommendedFeedsRaw === 'object' && Array.isArray((recommendedFeedsRaw as any).default)) {
-    return (recommendedFeedsRaw as any).default;
+  // For ESM/Next.js JSON import edge case
+  if (
+    recommendedFeedsRaw &&
+    typeof recommendedFeedsRaw === 'object' &&
+    'default' in recommendedFeedsRaw &&
+    Array.isArray((recommendedFeedsRaw as { default: unknown }).default)
+  ) {
+    return (recommendedFeedsRaw as { default: unknown[] }).default as RecommendedFeed[];
   }
   return [];
 }
