@@ -36,8 +36,8 @@ export default function Home() {
   const [hiddenRecommended, setHiddenRecommended] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchFeeds();
-    fetchArticles();
+    // Fetch feeds and articles in parallel for faster loading
+    Promise.all([fetchFeeds(), fetchArticles()]);
   }, []);
 
   useEffect(() => {
