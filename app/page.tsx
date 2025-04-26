@@ -73,7 +73,17 @@ export default function Home() {
     try {
       const res = await fetch('/api/articles');
       const data = await res.json();
-      const stateRes = await fetch('/api/article-state-bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ articles: data }), credentials: 'include' });
+      if (!Array.isArray(data)) {
+        setArticles([]);
+        setLoadingArticles(false);
+        return;
+      }
+      const stateRes = await fetch('/api/article-state-bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ articles: data }),
+        credentials: 'include'
+      });
       let stateMap: Record<string, {read: boolean, saved: boolean}> = {};
       if (stateRes.ok) {
         stateMap = await stateRes.json();
