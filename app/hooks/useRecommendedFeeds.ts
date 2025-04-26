@@ -1,4 +1,4 @@
-import recommendedFeeds from "../recommendedFeeds.json";
+import recommendedFeedsRaw from "../recommendedFeeds.json";
 
 export interface RecommendedFeed {
   name: string;
@@ -6,5 +6,12 @@ export interface RecommendedFeed {
 }
 
 export function useRecommendedFeeds(): RecommendedFeed[] {
-  return recommendedFeeds;
+  // Defensive: always return array, even if import fails or is not an array
+  if (Array.isArray(recommendedFeedsRaw)) {
+    return recommendedFeedsRaw;
+  }
+  if (recommendedFeedsRaw && typeof recommendedFeedsRaw === 'object' && Array.isArray((recommendedFeedsRaw as any).default)) {
+    return (recommendedFeedsRaw as any).default;
+  }
+  return [];
 }
