@@ -20,6 +20,49 @@ interface Article {
   saved?: boolean;
 }
 
+// --- AI Summary Hook ---
+function useAISummary() {
+  const [loading, setLoading] = useState(false);
+  const [summary, setSummary] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  async function fetchAISummary(url: string) {
+    setLoading(true);
+    setSummary('');
+    setError(null);
+    try {
+      const res = await fetch('/api/summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      if (!res.ok || !res.body) {
+        setError('Failed to fetch summary');
+        setLoading(false);
+        return;
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let done = false;
+      let aiText = '';
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        if (value) {
+          aiText += decoder.decode(value, { stream: true });
+          setSummary(aiText);
+        }
+      }
+    } catch (e) {
+      setError('Error streaming summary');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return { loading, summary, error, fetchAISummary };
+}
+
 export default function Home() {
   const { data: session, status } = useSession();
   const [feeds, setFeeds] = useState<Feed[]>([]);
@@ -317,19 +360,26 @@ export default function Home() {
           ) : articles.length === 0 ? (
             <li className="text-gray-400">No articles to show.</li>
           ) : (
-            articles.map((article, idx) => (
-              <li key={idx} className="mb-5 pb-4 border-b border-gray-100 bg-white rounded-lg shadow-sm px-3 py-3 flex flex-col gap-1 sm:gap-0 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex-1 min-w-0">
-                  <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline whitespace-normal break-words">{article.title}</a>
-                  <div className="text-xs text-gray-500 mt-0.5 truncate">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
-                </div>
-                <div className="flex gap-2 mt-2 sm:mt-0 sm:ml-4">
-                  <button onClick={() => toggleRead(article)} className={`text-xs px-3 py-1 rounded border ${article.read ? 'border-green-400 text-green-700 bg-green-50' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-green-100 transition`}>{article.read ? 'Read' : 'Mark as Read'}</button>
-                  <button onClick={() => toggleSaved(article)} className={`text-xs px-3 py-1 rounded border ${article.saved ? 'border-black text-white bg-black' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-neutral-800 hover:text-white transition`}>{article.saved ? 'Saved' : 'Save'}</button>
-                  <button onClick={() => removeArticle(article)} className="text-xs px-3 py-1 rounded border border-red-300 text-red-500 bg-white hover:bg-red-50 transition">Remove</button>
-                </div>
-              </li>
-            ))
+            articles.map((article, idx) => {
+              const { loading: aiLoading, summary: aiSummary, error: aiError, fetchAISummary } = useAISummary();
+              return (
+                <li key={idx} className="mb-5 pb-4 border-b border-gray-100 bg-white rounded-lg shadow-sm px-3 py-3 flex flex-col gap-1 sm:gap-0 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex-1 min-w-0">
+                    <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline whitespace-normal break-words">{article.title}</a>
+                    <div className="text-xs text-gray-500 mt-0.5 truncate">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
+                  </div>
+                  <div className="flex gap-2 mt-2 sm:mt-0 sm:ml-4">
+                    <button onClick={() => toggleRead(article)} className={`text-xs px-3 py-1 rounded border ${article.read ? 'border-green-400 text-green-700 bg-green-50' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-green-100 transition`}>{article.read ? 'Read' : 'Mark as Read'}</button>
+                    <button onClick={() => toggleSaved(article)} className={`text-xs px-3 py-1 rounded border ${article.saved ? 'border-black text-white bg-black' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-neutral-800 hover:text-white transition`}>{article.saved ? 'Saved' : 'Save'}</button>
+                    <button onClick={() => removeArticle(article)} className="text-xs px-3 py-1 rounded border border-red-300 text-red-500 bg-white hover:bg-red-50 transition">Remove</button>
+                    <button onClick={() => fetchAISummary(article.link ?? '')} className="text-xs px-3 py-1 rounded border border-gray-300 text-gray-500 bg-white hover:bg-neutral-100 transition" disabled={!article.link}>AI Summary</button>
+                  </div>
+                  {aiLoading && <span>Loading summary...</span>}
+                  {aiSummary && <div>{aiSummary}</div>}
+                  {aiError && <div style={{ color: 'red' }}>{aiError}</div>}
+                </li>
+              );
+            })
           )}
         </ul>
       )}
