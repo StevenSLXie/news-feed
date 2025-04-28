@@ -77,6 +77,11 @@ export default function Home() {
   const recommendedFeeds = useRecommendedFeeds();
   const [dismissedRecommended, setDismissedRecommended] = useState(false);
   const [hiddenRecommended, setHiddenRecommended] = useState<string[]>([]);
+  const { loading: aiLoading, summary: aiSummary, error: aiError, fetchAISummary } = useAISummary();
+
+  // TODO: Refactor useAISummary hook usage to comply with React rules of hooks
+  // The hook must be called at the top level of a React component or custom hook, not inside a callback.
+  // Please review the usage below and move the hook call outside of any callbacks.
 
   useEffect(() => {
     // Fetch feeds and articles in parallel for faster loading
@@ -361,7 +366,8 @@ export default function Home() {
             <li className="text-gray-400">No articles to show.</li>
           ) : (
             articles.map((article, idx) => {
-              const { loading: aiLoading, summary: aiSummary, error: aiError, fetchAISummary } = useAISummary();
+              // TODO: Fix 'e' is defined but never used in catch block at line 56
+              // If you do not use the error, change 'catch (e)' to 'catch {}'
               return (
                 <li key={idx} className="mb-5 pb-4 border-b border-gray-100 bg-white rounded-lg shadow-sm px-3 py-3 flex flex-col gap-1 sm:gap-0 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex-1 min-w-0">

@@ -18,9 +18,8 @@ export async function POST(req: NextRequest) {
       return new Response(JSON.stringify({ error: 'Missing or invalid URL' }), { status: 400 });
     }
     // Basic URL validation
-    let parsedUrl: URL;
     try {
-      parsedUrl = new URL(url);
+      new URL(url);
     } catch {
       return new Response(JSON.stringify({ error: 'Invalid URL' }), { status: 400 });
     }
@@ -28,7 +27,7 @@ export async function POST(req: NextRequest) {
     let article: Article | null = null;
     try {
       article = await extract(url);
-    } catch (e) {
+    } catch {
       return new Response(JSON.stringify({ error: 'Failed to extract article content.' }), { status: 500 });
     }
     if (!article || !article.content || article.content.length < 100) {
@@ -72,7 +71,7 @@ export async function POST(req: NextRequest) {
         'Connection': 'keep-alive',
       },
     });
-  } catch (err) {
+  } catch {
     return new Response(JSON.stringify({ error: 'Unexpected server error.' }), { status: 500 });
   }
 }
