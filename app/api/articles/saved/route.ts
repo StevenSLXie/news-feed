@@ -17,14 +17,13 @@ export async function GET() {
     include: { feed: true },
     orderBy: { publishedAt: 'desc' },
   });
-  return NextResponse.json(
-    saved.map(a => ({
-      feedId: a.feedId,
-      feedTitle: a.feed.title,
-      title: a.title,
-      link: a.link,
-      published: a.publishedAt?.toISOString() ?? null,
-    })),
-    { status: 200 }
-  );
+  const result = saved.map(a => ({
+    feedId: a.feedId,
+    feedTitle: a.feed.title,
+    title: a.title,
+    link: a.link,
+    published: a.publishedAt?.toISOString() ?? null,
+    saved: a.saved
+  }));
+  return NextResponse.json(result, { status: 200 });
 }
