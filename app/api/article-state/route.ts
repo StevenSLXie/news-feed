@@ -30,10 +30,12 @@ export async function POST(req: NextRequest) {
     if (!link || !feedId) return Response.json({ error: 'Missing required fields' }, { status: 400 });
     const userId = await getUserIdFromSession();
     if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    // Parse published date into ISO
+    const publishedAt = published ? new Date(published) : null;
     const result = await prisma.article.upsert({
       where: { userId_link: { userId, link } },
       update: { read, saved },
-      create: { userId, feedId, link, title, publishedAt: published, read, saved },
+      create: { userId, feedId, link, title, publishedAt, read, saved },
       select: { id: true, read: true, saved: true }
     });
     return Response.json(result, { status: 200 });
