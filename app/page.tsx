@@ -187,8 +187,10 @@ export default function Home() {
     }
   }
 
-  async function toggleRead(article: Article) {
-    await updateArticleState(article, !article.read, article.saved);
+  // Archive: mark as read and remove from list
+  async function archiveArticle(article: Article) {
+    await updateArticleState(article, true, article.saved);
+    setArticles(prev => prev.filter(a => a.link !== article.link));
   }
 
   async function toggleSaved(article: Article) {
@@ -211,20 +213,6 @@ export default function Home() {
         credentials: 'include',
       });
       fetchArticles();
-    } catch {
-      // error intentionally ignored
-    }
-  }
-
-  async function removeArticle(article: Article) {
-    try {
-      await fetch('/api/remove-article', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ link: article.link }),
-        credentials: 'include',
-      });
-      setArticles(prev => prev.filter(a => a.link !== article.link));
     } catch {
       // error intentionally ignored
     }
@@ -363,9 +351,7 @@ export default function Home() {
                   <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline break-words">{article.title}</a>
                   <div className="text-xs text-gray-500">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
                   <div className="flex items-center gap-2 mt-2 relative">
-                    <button onClick={() => toggleRead(article)} title={article.read ? 'Mark as Unread' : 'Mark as Read'} className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label={article.read ? 'Mark as Unread' : 'Mark as Read'}>
-                      {article.read ? '✅' : '✅'}
-                    </button>
+                    <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Archive">✅</button>
                     <button onClick={() => toggleSaved(article)} title={article.saved ? 'Unsave' : 'Save'} className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label={article.saved ? 'Unsave' : 'Save'}>
                       🔖
                     </button>
@@ -375,7 +361,7 @@ export default function Home() {
                     <details className="relative">
                       <summary className="p-1 text-gray-500 hover:text-gray-700 transition cursor-pointer" aria-label="More options">⋯</summary>
                       <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded shadow-md">
-                        <button onClick={() => removeArticle(article)} className="block px-4 py-2 text-xs text-red-500 hover:bg-gray-100 w-full text-left" aria-label="Remove">Remove</button>
+                        <button onClick={() => archiveArticle(article)} className="block px-4 py-2 text-xs text-red-500 hover:bg-gray-100 w-full text-left" aria-label="Archive">Archive</button>
                       </div>
                     </details>
                   </div>
@@ -414,13 +400,13 @@ export default function Home() {
                             <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline break-words">{article.title}</a>
                             <div className="text-xs text-gray-500">{article.published ? new Date(article.published).toLocaleString() : ''}</div>
                             <div className="flex items-center gap-2 mt-1 relative">
-                              <button onClick={() => toggleRead(article)} title={article.read ? 'Mark as Unread' : 'Mark as Read'} className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label={article.read ? 'Mark as Unread' : 'Mark as Read'}>✅</button>
+                              <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Archive">✅</button>
                               <button onClick={() => toggleSaved(article)} title={article.saved ? 'Unsave' : 'Save'} className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label={article.saved ? 'Unsave' : 'Save'}>🔖</button>
                               <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="AI Summary" disabled={!article.link}>💡</button>
                               <details className="relative">
                                 <summary className="p-1 text-gray-500 hover:text-gray-700 transition cursor-pointer" aria-label="More options">⋯</summary>
                                 <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded shadow-md">
-                                  <button onClick={() => removeArticle(article)} className="block px-4 py-2 text-xs text-red-500 hover:bg-gray-100 w-full text-left" aria-label="Remove">Remove</button>
+                                  <button onClick={() => archiveArticle(article)} className="block px-4 py-2 text-xs text-red-500 hover:bg-gray-100 w-full text-left" aria-label="Archive">Archive</button>
                                 </div>
                               </details>
                             </div>
