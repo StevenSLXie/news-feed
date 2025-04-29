@@ -29,7 +29,7 @@ export default function Home() {
   const [loadingArticles, setLoadingArticles] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [feedsCollapsed, setFeedsCollapsed] = useState(true);
-  const [tab, setTab] = useState<'all' | 'bySource'>('all');
+  const [tab, setTab] = useState<'all' | 'bySource' | 'saved'>('all');
   const [expandedFeedId, setExpandedFeedId] = useState<string | null>(null);
   const recommendedFeeds = useRecommendedFeeds();
   const [dismissedRecommended, setDismissedRecommended] = useState(false);
@@ -37,6 +37,9 @@ export default function Home() {
   const [summaries, setSummaries] = useState<Record<string, string>>({});
   const [loadingSummaries, setLoadingSummaries] = useState<Record<string, boolean>>({});
   const [errorSummaries, setErrorSummaries] = useState<Record<string, string | null>>({});
+  const [savedArticles, setSavedArticles] = useState<Article[]>([]);
+  const [loadingSaved, setLoadingSaved] = useState(false);
+  const [errorSaved, setErrorSaved] = useState<string | null>(null);
 
   async function handleFetchSummary(link: string) {
     setLoadingSummaries(prev => ({ ...prev, [link]: true }));
@@ -93,6 +96,10 @@ export default function Home() {
     }
   }, [dismissedRecommended]);
 
+  useEffect(() => {
+    if (tab === 'saved') fetchSavedArticles();
+  }, [tab]);
+
   async function fetchFeeds() {
     setLoading(true);
     setError(null);
@@ -141,6 +148,20 @@ export default function Home() {
       setError('Failed to load articles');
     } finally {
       setLoadingArticles(false);
+    }
+  }
+
+  async function fetchSavedArticles() {
+    setErrorSaved(null);
+    setLoadingSaved(true);
+    try {
+      const res = await fetch('/api/articles/saved');
+      const data = await res.json();
+      setSavedArticles(Array.isArray(data) ? data : []);
+    } catch {
+      setErrorSaved('Failed to load saved articles');
+    } finally {
+      setLoadingSaved(false);
     }
   }
 
@@ -334,6 +355,12 @@ export default function Home() {
           >
             By Source
           </button>
+          <button
+            className={`px-3 py-1.5 rounded font-medium text-sm transition border ${tab === 'saved' ? 'bg-black text-white border-black' : 'bg-white text-gray-700 border-gray-300 hover:bg-neutral-100'}`}
+            onClick={() => setTab('saved')}
+          >
+            Saved
+          </button>
         </div>
         <span className="ml-4">Articles</span>
         <button onClick={fetchArticles} className="ml-2 px-3 py-1.5 rounded border border-black/10 bg-black text-white text-sm font-medium hover:bg-neutral-800 transition shadow-sm">Refresh</button>
@@ -358,12 +385,6 @@ export default function Home() {
                     <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="AI Summary" disabled={!article.link}>
                       💡
                     </button>
-                    <details className="relative">
-                      <summary className="p-1 text-gray-500 hover:text-gray-700 transition cursor-pointer" aria-label="More options">⋯</summary>
-                      <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded shadow-md">
-                        <button onClick={() => archiveArticle(article)} className="block px-4 py-2 text-xs text-red-500 hover:bg-gray-100 w-full text-left" aria-label="Archive">Archive</button>
-                      </div>
-                    </details>
                   </div>
                   {loadingSummaries[article.link!] && <span>Loading summary...</span>}
                   {summaries[article.link!] && <div className="mt-2 break-words whitespace-normal">{summaries[article.link!]}</div>}
@@ -403,12 +424,6 @@ export default function Home() {
                               <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Archive">✅</button>
                               <button onClick={() => toggleSaved(article)} title={article.saved ? 'Unsave' : 'Save'} className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label={article.saved ? 'Unsave' : 'Save'}>🔖</button>
                               <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="AI Summary" disabled={!article.link}>💡</button>
-                              <details className="relative">
-                                <summary className="p-1 text-gray-500 hover:text-gray-700 transition cursor-pointer" aria-label="More options">⋯</summary>
-                                <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded shadow-md">
-                                  <button onClick={() => archiveArticle(article)} className="block px-4 py-2 text-xs text-red-500 hover:bg-gray-100 w-full text-left" aria-label="Archive">Archive</button>
-                                </div>
-                              </details>
                             </div>
                             {loadingSummaries[article.link!] && <span>Loading summary...</span>}
                             {summaries[article.link!] && <div className="w-full mt-2 break-words whitespace-normal">{summaries[article.link!]}</div>}
@@ -421,6 +436,32 @@ export default function Home() {
                 </li>
               );
             })
+          )}
+        </ul>
+      )}
+      {tab === 'saved' && (
+        <ul className="list-none p-0">
+          {loadingSaved ? (
+            <li className="text-gray-400">Loading saved articles...</li>
+          ) : errorSaved ? (
+            <li className="text-red-500">{errorSaved}</li>
+          ) : savedArticles.length === 0 ? (
+            <li className="text-gray-400">No saved articles.</li>
+          ) : (
+            savedArticles.map((article, idx) => (
+              <li key={idx} className="mb-5 pb-4 border-b border-gray-100 bg-white rounded-lg shadow-sm px-3 py-3 flex flex-col gap-2">
+                <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline break-words">{article.title}</a>
+                <div className="text-xs text-gray-500">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
+                <div className="flex items-center gap-2 mt-2">
+                  <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Archive">✅</button>
+                  <button onClick={() => toggleSaved(article)} title="Unsave" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Unsave">🔖</button>
+                  <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="AI Summary" disabled={!article.link}>💡</button>
+                </div>
+                {loadingSummaries[article.link!] && <span>Loading summary...</span>}
+                {summaries[article.link!] && <div className="mt-2 break-words whitespace-normal">{summaries[article.link!]}</div>}
+                {errorSummaries[article.link!] && <div className="mt-2 text-red-500">{errorSummaries[article.link!]}</div>}
+              </li>
+            ))
           )}
         </ul>
       )}
