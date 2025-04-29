@@ -234,8 +234,10 @@ export default function Home() {
   async function removeSaved(article: Article) {
     // Unsave on backend
     await updateArticleState(article, article.read, false);
-    // Refresh saved list
-    await fetchSavedArticles();
+    // Optimistically remove from savedArticles
+    setSavedArticles(prev => prev.filter(a => a.link !== article.link));
+    // Update main articles state
+    setArticles(prev => prev.map(a => a.link === article.link ? { ...a, saved: false } : a));
     // Indicate removal
     setJustAction({ link: article.link!, type: 'removed' });
     setTimeout(() => setJustAction(null), 2000);
