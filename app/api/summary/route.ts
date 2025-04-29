@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { extract } from '@extractus/article-extractor';
+import * as cheerio from 'cheerio';
 
 export const runtime = 'nodejs'; // Ensure Node.js runtime for fetch and libraries
 
@@ -28,16 +29,31 @@ export async function POST(req: NextRequest) {
     try {
       article = await extract(url);
     } catch {
-      return new Response(JSON.stringify({ error: 'Failed to extract article content.' }), { status: 500 });
+      article = null;
     }
-    if (!article || !article.content || article.content.length < 100) {
-      return new Response(JSON.stringify({ error: 'Could not extract article content or content too short.' }), { status: 422 });
+    // Fallback to Cheerio if extraction fails or content too short
+    let content = article?.content || '';
+    if (!content || content.length < 100) {
+      const htmlRes = await fetch(url);
+      const html = await htmlRes.text();
+      const $ = cheerio.load(html);
+      const paras = $('article p, main p, .prose p, .content p, #main p')
+        .map((_: any, el: any) => $(el).text())
+        .get();
+      const fallback = paras.join('\n\n');
+      if (!fallback || fallback.length < 100) {
+        return new Response(JSON.stringify({ error: 'Could not extract article content or content too short.' }), { status: 422 });
+      }
+      content = fallback;
+      article = { title: article?.title || $('title').text(), content };
     }
+    // Title and content ready for prompt
+    const title = article?.title || '';
     if (!OPENAI_API_KEY) {
       return new Response(JSON.stringify({ error: 'OpenAI API key not set.' }), { status: 500 });
     }
     // Prepare prompt for summary
-    const prompt = `Summarize the following news article in about 100 words, focusing on the main points.\n\nTitle: ${article.title || ''}\n\nContent: ${article.content}`;
+    const prompt = `Summarize the following news article in about 100 words, focusing on the main points.\n\nTitle: ${title}\n\nContent: ${content}`;
 
     // Call OpenAI API with streaming
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
