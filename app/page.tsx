@@ -63,12 +63,14 @@ export default function Home() {
               const parsed = JSON.parse(data);
               const delta = parsed.choices?.[0]?.delta?.content;
               if (delta) { text += delta; setSummaries(prev => ({ ...prev, [link]: text })); }
-            } catch (_){}
+            } catch {
+              // ignore non-JSON SSE lines
+            }
           }
         }
       }
-    } catch (err: any) {
-      setErrorSummaries(prev => ({ ...prev, [link]: err.message }));
+    } catch (err: unknown) {
+      setErrorSummaries(prev => ({ ...prev, [link]: err instanceof Error ? err.message : String(err) }));
     } finally {
       setLoadingSummaries(prev => ({ ...prev, [link]: false }));
     }
