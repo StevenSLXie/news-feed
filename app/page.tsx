@@ -40,6 +40,8 @@ export default function Home() {
   const [savedArticles, setSavedArticles] = useState<Article[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
   const [errorSaved, setErrorSaved] = useState<string | null>(null);
+  // indicator for just-saved articles
+  const [justSavedLink, setJustSavedLink] = useState<string | null>(null);
 
   async function handleFetchSummary(link: string) {
     setLoadingSummaries(prev => ({ ...prev, [link]: true }));
@@ -215,7 +217,14 @@ export default function Home() {
   }
 
   async function toggleSaved(article: Article) {
-    await updateArticleState(article, article.read, !article.saved);
+    const newSaved = !article.saved;
+    // Optimistic UI update
+    setArticles(prev => prev.map(a => a.link === article.link ? { ...a, saved: newSaved } : a));
+    // Persist
+    await updateArticleState(article, article.read, newSaved);
+    // Show saved indicator
+    setJustSavedLink(article.link!);
+    setTimeout(() => setJustSavedLink(null), 2000);
   }
 
   async function updateArticleState(article: Article, read?: boolean, saved?: boolean) {
@@ -233,7 +242,7 @@ export default function Home() {
         }),
         credentials: 'include',
       });
-      fetchArticles();
+      // no full refresh here
     } catch {
       // error intentionally ignored
     }
@@ -379,12 +388,9 @@ export default function Home() {
                   <div className="text-xs text-gray-500">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
                   <div className="flex items-center gap-2 mt-2 relative">
                     <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Archive">✅</button>
-                    <button onClick={() => toggleSaved(article)} title={article.saved ? 'Unsave' : 'Save'} className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label={article.saved ? 'Unsave' : 'Save'}>
-                      🔖
-                    </button>
-                    <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="AI Summary" disabled={!article.link}>
-                      💡
-                    </button>
+                    <button onClick={() => toggleSaved(article)} title={article.saved ? 'Unsave' : 'Save'} className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label={article.saved ? 'Unsave' : 'Save'}>🔖</button>
+                    {justSavedLink === article.link && <span className="text-green-500 ml-1 text-xs">Saved!</span>}
+                    <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="AI Summary" disabled={!article.link}>💡</button>
                   </div>
                   {loadingSummaries[article.link!] && <span>Loading summary...</span>}
                   {summaries[article.link!] && <div className="mt-2 break-words whitespace-normal">{summaries[article.link!]}</div>}
@@ -423,6 +429,7 @@ export default function Home() {
                             <div className="flex items-center gap-2 mt-1 relative">
                               <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Archive">✅</button>
                               <button onClick={() => toggleSaved(article)} title={article.saved ? 'Unsave' : 'Save'} className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label={article.saved ? 'Unsave' : 'Save'}>🔖</button>
+                              {justSavedLink === article.link && <span className="text-green-500 ml-1 text-xs">Saved!</span>}
                               <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="AI Summary" disabled={!article.link}>💡</button>
                             </div>
                             {loadingSummaries[article.link!] && <span>Loading summary...</span>}
@@ -455,6 +462,7 @@ export default function Home() {
                 <div className="flex items-center gap-2 mt-2">
                   <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Archive">✅</button>
                   <button onClick={() => toggleSaved(article)} title="Unsave" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Unsave">🔖</button>
+                  {justSavedLink === article.link && <span className="text-green-500 ml-1 text-xs">Saved!</span>}
                   <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="AI Summary" disabled={!article.link}>💡</button>
                 </div>
                 {loadingSummaries[article.link!] && <span>Loading summary...</span>}
