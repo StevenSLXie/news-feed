@@ -20,69 +20,6 @@ interface Article {
   saved?: boolean;
 }
 
-// --- AI Summary Hook ---
-function useAISummary() {
-  const [loading, setLoading] = useState(false);
-  const [summary, setSummary] = useState('');
-  const [error, setError] = useState<string | null>(null);
-
-  async function fetchAISummary(url: string) {
-    setLoading(true);
-    setSummary('');
-    setError(null);
-    try {
-      const res = await fetch('/api/summary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
-      });
-      if (!res.ok || !res.body) {
-        setError('Failed to fetch summary');
-        setLoading(false);
-        return;
-      }
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-      let done = false;
-      let buffer = '';
-      let aiText = '';
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
-        if (value) {
-          buffer += decoder.decode(value, { stream: true });
-          const parts = buffer.split(/\r?\n\r?\n/);
-          buffer = parts.pop()!;
-          for (const part of parts) {
-            const line = part.trim();
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6);
-              if (data === '[DONE]') { done = true; break; }
-              try {
-                const parsed = JSON.parse(data);
-                const delta = parsed.choices?.[0]?.delta?.content;
-                if (delta) {
-                  aiText += delta;
-                  setSummary(aiText);
-                }
-              } catch (err) {
-                console.error('Failed to parse SSE chunk', err);
-              }
-            }
-          }
-        }
-      }
-    } catch (err) {
-      console.error('Error streaming summary', err);
-      setError('Error streaming summary');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return { loading, summary, error, fetchAISummary };
-}
-
 export default function Home() {
   const { data: session, status } = useSession();
   const [feeds, setFeeds] = useState<Feed[]>([]);
@@ -97,7 +34,45 @@ export default function Home() {
   const recommendedFeeds = useRecommendedFeeds();
   const [dismissedRecommended, setDismissedRecommended] = useState(false);
   const [hiddenRecommended, setHiddenRecommended] = useState<string[]>([]);
-  const { loading: aiLoading, summary: aiSummary, error: aiError, fetchAISummary } = useAISummary();
+  const [summaries, setSummaries] = useState<Record<string, string>>({});
+  const [loadingSummaries, setLoadingSummaries] = useState<Record<string, boolean>>({});
+  const [errorSummaries, setErrorSummaries] = useState<Record<string, string | null>>({});
+
+  async function handleFetchSummary(link: string) {
+    setLoadingSummaries(prev => ({ ...prev, [link]: true }));
+    setSummaries(prev => ({ ...prev, [link]: '' }));
+    setErrorSummaries(prev => ({ ...prev, [link]: null }));
+    let buffer = '';
+    let text = '';
+    try {
+      const res = await fetch('/api/summary', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: link }) });
+      if (!res.ok || !res.body) throw new Error('Failed to fetch summary');
+      const reader = res.body.getReader(); const decoder = new TextDecoder();
+      let done = false;
+      while (!done) {
+        const { value, done: dr } = await reader.read(); done = dr;
+        if (value) {
+          buffer += decoder.decode(value, { stream: true });
+          const parts = buffer.split(/\r?\n\r?\n/);
+          buffer = parts.pop()!;
+          for (const part of parts) {
+            const line = part.trim(); if (!line.startsWith('data: ')) continue;
+            const data = line.slice(6);
+            if (data === '[DONE]') { done = true; break; }
+            try {
+              const parsed = JSON.parse(data);
+              const delta = parsed.choices?.[0]?.delta?.content;
+              if (delta) { text += delta; setSummaries(prev => ({ ...prev, [link]: text })); }
+            } catch (_){}
+          }
+        }
+      }
+    } catch (err: any) {
+      setErrorSummaries(prev => ({ ...prev, [link]: err.message }));
+    } finally {
+      setLoadingSummaries(prev => ({ ...prev, [link]: false }));
+    }
+  }
 
   useEffect(() => {
     Promise.all([fetchFeeds(), fetchArticles()]);
@@ -147,7 +122,7 @@ export default function Home() {
         body: JSON.stringify({ articles: data }),
         credentials: 'include'
       });
-      let stateMap: Record<string, {read: boolean, saved: boolean}> = {};
+      let stateMap: Record<string, { read: boolean, saved: boolean }> = {};
       if (stateRes.ok) {
         stateMap = await stateRes.json();
       }
@@ -391,11 +366,11 @@ export default function Home() {
                     <button onClick={() => toggleRead(article)} className={`text-xs px-3 py-1 rounded border ${article.read ? 'border-green-400 text-green-700 bg-green-50' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-green-100 transition`}>{article.read ? 'Read' : 'Mark as Read'}</button>
                     <button onClick={() => toggleSaved(article)} className={`text-xs px-3 py-1 rounded border ${article.saved ? 'border-black text-white bg-black' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-neutral-800 hover:text-white transition`}>{article.saved ? 'Saved' : 'Save'}</button>
                     <button onClick={() => removeArticle(article)} className="text-xs px-3 py-1 rounded border border-red-300 text-red-500 bg-white hover:bg-red-50 transition">Remove</button>
-                    <button onClick={() => fetchAISummary(article.link ?? '')} className="text-xs px-3 py-1 rounded border border-gray-300 text-gray-500 bg-white hover:bg-neutral-100 transition" disabled={!article.link}>AI Summary</button>
+                    <button onClick={() => handleFetchSummary(article.link ?? '')} className="text-xs px-3 py-1 rounded border border-gray-300 text-gray-500 bg-white hover:bg-neutral-100 transition" disabled={!article.link}>AI Summary</button>
                   </div>
-                  {aiLoading && <span>Loading summary...</span>}
-                  {aiSummary && <div>{aiSummary}</div>}
-                  {aiError && <div style={{ color: 'red' }}>{aiError}</div>}
+                  {loadingSummaries[article.link!] && <span>Loading summary...</span>}
+                  {summaries[article.link!] && <div className="w-full mt-2 break-words whitespace-normal">{summaries[article.link!]}</div>}
+                  {errorSummaries[article.link!] && <div className="w-full mt-2 text-red-500">{errorSummaries[article.link!]}</div>}
                 </li>
               );
             })
@@ -431,7 +406,11 @@ export default function Home() {
                               <button onClick={() => toggleRead(article)} className={`text-xs px-3 py-1 rounded border ${article.read ? 'border-green-400 text-green-700 bg-green-50' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-green-100 transition`}>{article.read ? 'Read' : 'Mark as Read'}</button>
                               <button onClick={() => toggleSaved(article)} className={`text-xs px-3 py-1 rounded border ${article.saved ? 'border-black text-white bg-black' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-neutral-800 hover:text-white transition`}>{article.saved ? 'Saved' : 'Save'}</button>
                               <button onClick={() => removeArticle(article)} className="text-xs px-3 py-1 rounded border border-red-300 text-red-500 bg-white hover:bg-red-50 transition">Remove</button>
+                              <button onClick={() => handleFetchSummary(article.link ?? '')} className="text-xs px-3 py-1 rounded border border-gray-300 text-gray-500 bg-white hover:bg-neutral-100 transition" disabled={!article.link}>AI Summary</button>
                             </div>
+                            {loadingSummaries[article.link!] && <span>Loading summary...</span>}
+                            {summaries[article.link!] && <div className="w-full mt-2 break-words whitespace-normal">{summaries[article.link!]}</div>}
+                            {errorSummaries[article.link!] && <div className="w-full mt-2 text-red-500">{errorSummaries[article.link!]}</div>}
                           </li>
                         ))
                       )}
