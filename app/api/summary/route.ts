@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       const html = await htmlRes.text();
       const $ = cheerio.load(html);
       const paras = $('article p, main p, .prose p, .content p, #main p')
-        .map((_: any, el: any) => $(el).text())
+        .map((_: number, el: cheerio.Element) => $(el).text())
         .get();
       const fallback = paras.join('\n\n');
       if (!fallback || fallback.length < 100) {
