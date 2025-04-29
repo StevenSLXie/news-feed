@@ -44,16 +44,36 @@ function useAISummary() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let done = false;
+      let buffer = '';
       let aiText = '';
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         if (value) {
-          aiText += decoder.decode(value, { stream: true });
-          setSummary(aiText);
+          buffer += decoder.decode(value, { stream: true });
+          const parts = buffer.split(/\r?\n\r?\n/);
+          buffer = parts.pop()!;
+          for (const part of parts) {
+            const line = part.trim();
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data === '[DONE]') { done = true; break; }
+              try {
+                const parsed = JSON.parse(data);
+                const delta = parsed.choices?.[0]?.delta?.content;
+                if (delta) {
+                  aiText += delta;
+                  setSummary(aiText);
+                }
+              } catch (err) {
+                console.error('Failed to parse SSE chunk', err);
+              }
+            }
+          }
         }
       }
-    } catch {
+    } catch (err) {
+      console.error('Error streaming summary', err);
       setError('Error streaming summary');
     } finally {
       setLoading(false);
@@ -79,12 +99,7 @@ export default function Home() {
   const [hiddenRecommended, setHiddenRecommended] = useState<string[]>([]);
   const { loading: aiLoading, summary: aiSummary, error: aiError, fetchAISummary } = useAISummary();
 
-  // TODO: Refactor useAISummary hook usage to comply with React rules of hooks
-  // The hook must be called at the top level of a React component or custom hook, not inside a callback.
-  // Please review the usage below and move the hook call outside of any callbacks.
-
   useEffect(() => {
-    // Fetch feeds and articles in parallel for faster loading
     Promise.all([fetchFeeds(), fetchArticles()]);
   }, []);
 
