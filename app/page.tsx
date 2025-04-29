@@ -362,11 +362,22 @@ export default function Home() {
                 <li key={idx} className="mb-5 pb-4 border-b border-gray-100 bg-white rounded-lg shadow-sm px-3 py-3 flex flex-col gap-2">
                   <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline break-words">{article.title}</a>
                   <div className="text-xs text-gray-500">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <button onClick={() => toggleRead(article)} className={`text-xs px-3 py-1 rounded border ${article.read ? 'border-green-400 text-green-700 bg-green-50' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-green-100 transition`}>{article.read ? 'Read' : 'Mark as Read'}</button>
-                    <button onClick={() => toggleSaved(article)} className={`text-xs px-3 py-1 rounded border ${article.saved ? 'border-black text-white bg-black' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-neutral-800 hover:text-white transition`}>{article.saved ? 'Saved' : 'Save'}</button>
-                    <button onClick={() => removeArticle(article)} className="text-xs px-3 py-1 rounded border border-red-300 text-red-500 bg-white hover:bg-red-50 transition">Remove</button>
-                    <button onClick={() => handleFetchSummary(article.link ?? '')} className="text-xs px-3 py-1 rounded border border-gray-300 text-gray-500 bg-white hover:bg-neutral-100 transition" disabled={!article.link}>AI Summary</button>
+                  <div className="flex items-center gap-2 mt-2 relative">
+                    <button onClick={() => toggleRead(article)} title={article.read ? 'Mark as Unread' : 'Mark as Read'} className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label={article.read ? 'Mark as Unread' : 'Mark as Read'}>
+                      {article.read ? '✅' : '✅'}
+                    </button>
+                    <button onClick={() => toggleSaved(article)} title={article.saved ? 'Unsave' : 'Save'} className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label={article.saved ? 'Unsave' : 'Save'}>
+                      🔖
+                    </button>
+                    <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="AI Summary" disabled={!article.link}>
+                      💡
+                    </button>
+                    <details className="relative">
+                      <summary className="p-1 text-gray-500 hover:text-gray-700 transition cursor-pointer" aria-label="More options">⋯</summary>
+                      <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded shadow-md">
+                        <button onClick={() => removeArticle(article)} className="block px-4 py-2 text-xs text-red-500 hover:bg-gray-100 w-full text-left" aria-label="Remove">Remove</button>
+                      </div>
+                    </details>
                   </div>
                   {loadingSummaries[article.link!] && <span>Loading summary...</span>}
                   {summaries[article.link!] && <div className="mt-2 break-words whitespace-normal">{summaries[article.link!]}</div>}
@@ -402,11 +413,16 @@ export default function Home() {
                           <li key={idx} className="mb-3 pb-2 border-b border-gray-50 bg-white rounded px-2 py-2 flex flex-col gap-2">
                             <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline break-words">{article.title}</a>
                             <div className="text-xs text-gray-500">{article.published ? new Date(article.published).toLocaleString() : ''}</div>
-                            <div className="flex flex-wrap gap-2">
-                              <button onClick={() => toggleRead(article)} className={`text-xs px-3 py-1 rounded border ${article.read ? 'border-green-400 text-green-700 bg-green-50' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-green-100 transition`}>{article.read ? 'Read' : 'Mark as Read'}</button>
-                              <button onClick={() => toggleSaved(article)} className={`text-xs px-3 py-1 rounded border ${article.saved ? 'border-black text-white bg-black' : 'border-gray-300 text-gray-500 bg-white'} hover:bg-neutral-800 hover:text-white transition`}>{article.saved ? 'Saved' : 'Save'}</button>
-                              <button onClick={() => removeArticle(article)} className="text-xs px-3 py-1 rounded border border-red-300 text-red-500 bg-white hover:bg-red-50 transition">Remove</button>
-                              <button onClick={() => handleFetchSummary(article.link ?? '')} className="text-xs px-3 py-1 rounded border border-gray-300 text-gray-500 bg-white hover:bg-neutral-100 transition" disabled={!article.link}>AI Summary</button>
+                            <div className="flex items-center gap-2 mt-1 relative">
+                              <button onClick={() => toggleRead(article)} title={article.read ? 'Mark as Unread' : 'Mark as Read'} className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label={article.read ? 'Mark as Unread' : 'Mark as Read'}>✅</button>
+                              <button onClick={() => toggleSaved(article)} title={article.saved ? 'Unsave' : 'Save'} className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label={article.saved ? 'Unsave' : 'Save'}>🔖</button>
+                              <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="AI Summary" disabled={!article.link}>💡</button>
+                              <details className="relative">
+                                <summary className="p-1 text-gray-500 hover:text-gray-700 transition cursor-pointer" aria-label="More options">⋯</summary>
+                                <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded shadow-md">
+                                  <button onClick={() => removeArticle(article)} className="block px-4 py-2 text-xs text-red-500 hover:bg-gray-100 w-full text-left" aria-label="Remove">Remove</button>
+                                </div>
+                              </details>
                             </div>
                             {loadingSummaries[article.link!] && <span>Loading summary...</span>}
                             {summaries[article.link!] && <div className="w-full mt-2 break-words whitespace-normal">{summaries[article.link!]}</div>}
