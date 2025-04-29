@@ -222,7 +222,9 @@ export default function Home() {
     setArticles(prev => prev.map(a => a.link === article.link ? { ...a, saved: newSaved } : a));
     // Persist
     await updateArticleState(article, article.read, newSaved);
-    // Show saved indicator
+    // Remove from saved list if unsaved
+    if (!newSaved) setSavedArticles(prev => prev.filter(a => a.link !== article.link));
+    // Show saved/removed indicator
     setJustSavedLink(article.link!);
     setTimeout(() => setJustSavedLink(null), 2000);
   }
@@ -461,7 +463,7 @@ export default function Home() {
                 <div className="text-xs text-gray-500">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
                 <div className="flex items-center gap-2 mt-2">
                   <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Archive">✅</button>
-                  <button onClick={() => toggleSaved(article)} title="Unsave" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Unsave">🔖</button>
+                  <button onClick={() => toggleSaved(article)} title="Remove" className="p-1 text-red-500 hover:text-red-700 transition" aria-label="Remove">🗑️</button>
                   {justSavedLink === article.link && <span className="text-green-500 ml-1 text-xs">Saved!</span>}
                   <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="AI Summary" disabled={!article.link}>💡</button>
                 </div>
