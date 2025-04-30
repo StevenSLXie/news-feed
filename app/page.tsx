@@ -10,6 +10,11 @@ interface Feed {
   title?: string;
 }
 
+interface RecommendedFeed {
+  name: string;
+  url: string;
+}
+
 interface Article {
   feedId: string;
   feedTitle: string;
@@ -36,10 +41,10 @@ export default function Home() {
   const [feedsCollapsed, setFeedsCollapsed] = useState(true);
   const [tab, setTab] = useState<'all' | 'bySource' | 'saved'>('all');
   const [expandedFeedId, setExpandedFeedId] = useState<string | null>(null);
-  const recommendedFeeds = useRecommendedFeeds();
+  const recommendedFeeds: RecommendedFeed[] = useRecommendedFeeds();
   const [dismissedRecommended, setDismissedRecommended] = useState(false);
   const [hiddenRecommended, setHiddenRecommended] = useState<string[]>([]);
-  const [currentRecs, setCurrentRecs] = useState<typeof recommendedFeeds>([]);
+  const [currentRecs, setCurrentRecs] = useState<RecommendedFeed[]>([]);
   const [summaries, setSummaries] = useState<Record<string, string>>({});
   const [loadingSummaries, setLoadingSummaries] = useState<Record<string, boolean>>({});
   const [errorSummaries, setErrorSummaries] = useState<Record<string, string | null>>({});
@@ -113,7 +118,7 @@ export default function Home() {
     if (tab === 'saved') fetchSavedArticles();
   }, [tab]);
 
-  // Initialize batch on load
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const avail = recommendedFeeds.filter(f => !hiddenRecommended.includes(f.url));
     setCurrentRecs(shuffleArray(avail).slice(0, 5));
@@ -162,7 +167,7 @@ export default function Home() {
         setArticles([]);
         setLoadingArticles(false);
         return;
-      }
+    }
       const stateRes = await fetch('/api/article-state-bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -328,7 +333,7 @@ export default function Home() {
         <h1 className="font-semibold text-2xl tracking-tight text-gray-900">My News Feeds</h1>
         <div className="text-sm text-gray-600 flex items-center gap-3">
           <span>Signed in as {session.user?.email}</span>
-          <button onClick={() => signOut()} className="text-gray-700 bg-gray-100 border border-gray-300 rounded px-3 py-1.5 hover:bg-gray-200 transition">Sign out</button>
+          <button onClick={() => signOut()} className="text-gray-700 bg-gray-100 border border-gray-300 rounded px-3 py-1.5 hover:bg-neutral-100 transition">Sign out</button>
         </div>
       </div>
       <form onSubmit={addFeed} className="flex gap-2 mb-8">
@@ -397,6 +402,22 @@ export default function Home() {
             >Switch Batch</button>
           </div>
         </div>
+      )}
+      {/* Subscribed Feeds */}
+      <h2 className="mt-8 text-lg font-medium cursor-pointer select-none flex items-center gap-2" onClick={() => setFeedsCollapsed(c => !c)}>
+        Subscribed Feeds
+        <span className="text-gray-400 text-base">{feedsCollapsed ? '▼' : '▲'}</span>
+      </h2>
+      {!feedsCollapsed && (
+        <ul className="pl-0 list-none mb-8 divide-y divide-gray-100">
+          {feeds.map(feed => (
+            <li key={feed.id} className="flex items-center py-2">
+              <span className="flex-1 truncate text-gray-800">{feed.title ? feed.title : feed.url}</span>
+              <button onClick={() => removeFeed(feed.id)} className="ml-2 text-red-500 bg-transparent border-none text-lg hover:bg-red-50 rounded-full w-8 h-8 flex items-center justify-center transition" title="Unsubscribe">×</button>
+            </li>
+          ))}
+          {feeds.length === 0 && <li className="text-gray-400 py-2">No feeds subscribed.</li>}
+        </ul>
       )}
       <h2 className="font-semibold mt-6 mb-2 flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap gap-2">
