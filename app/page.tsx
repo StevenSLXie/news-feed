@@ -108,10 +108,11 @@ export default function Home() {
     if (tab === 'saved') fetchSavedArticles();
   }, [tab]);
 
+  // Initialize batch once on load
   useEffect(() => {
     const avail = recommendedFeeds.filter(f => !hiddenRecommended.includes(f.url));
     setCurrentRecs(shuffleArray(avail).slice(0, 5));
-  }, [recommendedFeeds, hiddenRecommended]);
+  }, [recommendedFeeds]);
 
   async function fetchFeeds() {
     setLoading(true);
@@ -345,6 +346,8 @@ export default function Home() {
                         setNewFeedUrl('');
                         await fetchFeeds();
                         await fetchArticles();
+                        // remove subscribed feed from current batch
+                        setCurrentRecs(prev => prev.filter(f => f.url !== feed.url));
                       } catch {
                         setError('Failed to add feed');
                       } finally {
