@@ -440,7 +440,7 @@ export default function Home() {
                     <button onClick={() => toggleSaved(article)} title={article.saved ? 'Unsave' : 'Save'} className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label={article.saved ? 'Unsave' : 'Save'}>🔖</button>
                     {justAction?.link === article.link && justAction?.type === 'saved' && <span className="text-green-500 ml-1 text-xs">Saved!</span>}
                     {justAction?.link === article.link && justAction?.type === 'removed' && <span className="text-red-500 ml-1 text-xs">Removed!</span>}
-                    <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="p-1 text-gray-500 hover:text-gray-700 transition flex items-center gap-1" aria-label="AI Summary" disabled={!article.link}>💡 AI Summary</button>
+                    <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="px-2 py-1 rounded text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 transition flex items-center gap-1" aria-label="AI Summary" disabled={!article.link}>💡 AI Summary</button>
                   </div>
                   {loadingSummaries[article.link!] && <span>Loading summary...</span>}
                   {summaries[article.link!] && <div className="mt-2 break-words whitespace-normal">{summaries[article.link!]}</div>}
@@ -481,7 +481,7 @@ export default function Home() {
                               <button onClick={() => toggleSaved(article)} title={article.saved ? 'Unsave' : 'Save'} className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label={article.saved ? 'Unsave' : 'Save'}>🔖</button>
                               {justAction?.link === article.link && justAction?.type === 'saved' && <span className="text-green-500 ml-1 text-xs">Saved!</span>}
                               {justAction?.link === article.link && justAction?.type === 'removed' && <span className="text-red-500 ml-1 text-xs">Removed!</span>}
-                              <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="p-1 text-gray-500 hover:text-gray-700 transition flex items-center gap-1" aria-label="AI Summary" disabled={!article.link}>💡 AI Summary</button>
+                              <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="px-2 py-1 rounded text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 transition flex items-center gap-1" aria-label="AI Summary" disabled={!article.link}>💡 AI Summary</button>
                             </div>
                             {loadingSummaries[article.link!] && <span>Loading summary...</span>}
                             {summaries[article.link!] && <div className="w-full mt-2 break-words whitespace-normal">{summaries[article.link!]}</div>}
@@ -514,7 +514,7 @@ export default function Home() {
                   <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Archive">✅</button>
                   <button onClick={() => removeSaved(article)} title="Remove" className="p-1 text-red-500 hover:text-red-700 transition" aria-label="Remove">🗑️</button>
                   {justAction?.link === article.link && justAction?.type === 'removed' && <span className="text-red-500 ml-1 text-xs">Removed!</span>}
-                  <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="p-1 text-gray-500 hover:text-gray-700 transition flex items-center gap-1" aria-label="AI Summary" disabled={!article.link}>💡 AI Summary</button>
+                  <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="px-2 py-1 rounded text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 transition flex items-center gap-1" aria-label="AI Summary" disabled={!article.link}>💡 AI Summary</button>
                 </div>
                 {loadingSummaries[article.link!] && <span>Loading summary...</span>}
                 {summaries[article.link!] && <div className="mt-2 break-words whitespace-normal">{summaries[article.link!]}</div>}
