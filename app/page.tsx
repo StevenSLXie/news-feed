@@ -320,7 +320,7 @@ export default function Home() {
         </button>
       </form>
       {error && <div className="text-red-600 mb-4 text-sm">{error}</div>}
-      {!loading && feeds.length === 0 && !dismissedRecommended && (
+      {!loading && !dismissedRecommended && (
         <div className="mb-8 p-5 rounded-lg bg-white border border-gray-200 shadow-sm">
           <div className="font-semibold mb-2 text-lg">Recommended Feeds</div>
           <ul className="mb-4">
@@ -360,14 +360,14 @@ export default function Home() {
             <button
               className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-600 font-medium hover:bg-neutral-100 transition text-xs"
               onClick={() => setDismissedRecommended(true)}
-            >Dismiss All</button>
+            >Close</button>
             <button
               className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-600 font-medium hover:bg-neutral-100 transition text-xs"
               onClick={() => {
                 const avail = recommendedFeeds.filter(f => !hiddenRecommended.includes(f.url));
                 setCurrentRecs(shuffleArray(avail).slice(0, 5));
               }}
-            >换一批</button>
+            >Switch Batch</button>
           </div>
         </div>
       )}
