@@ -133,16 +133,6 @@ export default function Home() {
     setHasShownToday(shown);
   }, []);
 
-  // Decide to show recommendations
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (!hasShownToday && feeds.length < 5) {
-      setShowRecommended(true);
-      localStorage.setItem('recommendedShownDate', today);
-      setHasShownToday(true);
-    }
-  }, [feeds, hasShownToday, today]);
-
   async function fetchFeeds() {
     setLoading(true);
     setError(null);
