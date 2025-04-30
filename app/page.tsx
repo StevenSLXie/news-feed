@@ -49,6 +49,11 @@ export default function Home() {
   // indicator for recent save/unsave actions
   const [justAction, setJustAction] = useState<{ link: string; type: 'saved' | 'removed' } | null>(null);
 
+  // Daily recommendation throttle
+  const today = new Date().toISOString().slice(0, 10);
+  const [hasShownToday, setHasShownToday] = useState(() => localStorage.getItem('recommendedShownDate') === today);
+  const [showRecommended, setShowRecommended] = useState(false);
+
   async function handleFetchSummary(link: string) {
     setLoadingSummaries(prev => ({ ...prev, [link]: true }));
     setSummaries(prev => ({ ...prev, [link]: '' }));
@@ -108,11 +113,20 @@ export default function Home() {
     if (tab === 'saved') fetchSavedArticles();
   }, [tab]);
 
-  // Initialize batch once on load
+  // Initialize batch on load
   useEffect(() => {
     const avail = recommendedFeeds.filter(f => !hiddenRecommended.includes(f.url));
     setCurrentRecs(shuffleArray(avail).slice(0, 5));
   }, [recommendedFeeds]);
+
+  // Determine if we should show recommendations today
+  useEffect(() => {
+    if (!hasShownToday && feeds.length < 5) {
+      setShowRecommended(true);
+      localStorage.setItem('recommendedShownDate', today);
+      setHasShownToday(true);
+    }
+  }, [feeds]);
 
   async function fetchFeeds() {
     setLoading(true);
@@ -321,7 +335,7 @@ export default function Home() {
         </button>
       </form>
       {error && <div className="text-red-600 mb-4 text-sm">{error}</div>}
-      {!dismissedRecommended && (
+      {showRecommended && !dismissedRecommended && (
         <div className="mb-8 p-5 rounded-lg bg-white border border-gray-200 shadow-sm">
           <div className="font-semibold mb-2 text-lg">Recommended Feeds</div>
           <ul className="mb-4">
