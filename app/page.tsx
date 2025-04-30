@@ -57,6 +57,9 @@ export default function Home() {
   // Daily recommendation throttle (client-only)
   const [showRecommended, setShowRecommended] = useState(false);
 
+  // Email login
+  const [emailLogin, setEmailLogin] = useState('');
+
   async function handleFetchSummary(link: string) {
     setLoadingSummaries(prev => ({ ...prev, [link]: true }));
     setSummaries(prev => ({ ...prev, [link]: '' }));
@@ -292,7 +295,24 @@ export default function Home() {
     return (
       <main className="max-w-xl mx-auto px-3 sm:px-6 py-6 font-sans">
         <h1 className="font-semibold text-2xl tracking-tight text-gray-900">MyDailyNews</h1>
-        <div className="text-sm text-gray-600 flex items-center gap-3">
+        <div className="mt-4 flex flex-col sm:flex-row items-center gap-2">
+          <input
+            type="email"
+            placeholder="you@example.com"
+            value={emailLogin}
+            onChange={e => setEmailLogin(e.target.value)}
+            className="flex-1 px-3 py-2 rounded border border-gray-300 focus:ring-2 focus:ring-neutral-400 text-base"
+          />
+          <button
+            type="button"
+            onClick={() => signIn('email', { email: emailLogin })}
+            className="w-full sm:w-auto px-5 py-2 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
+            disabled={!emailLogin}
+          >
+            Email Magic Link
+          </button>
+        </div>
+        <div className="mt-4 text-sm text-gray-600 flex items-center gap-3">
           <button onClick={() => signIn('google')} className="text-gray-700 bg-gray-100 border border-gray-300 rounded px-3 py-1.5 hover:bg-gray-200 transition">
             <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5 mr-2" />
             Sign in with Google
