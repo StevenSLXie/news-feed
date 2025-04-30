@@ -49,9 +49,9 @@ export default function Home() {
   // indicator for recent save/unsave actions
   const [justAction, setJustAction] = useState<{ link: string; type: 'saved' | 'removed' } | null>(null);
 
-  // Daily recommendation throttle
-  const today = new Date().toISOString().slice(0, 10);
-  const [hasShownToday, setHasShownToday] = useState(() => localStorage.getItem('recommendedShownDate') === today);
+  // Daily recommendation throttle (client-only)
+  const [today, setToday] = useState<string>('');
+  const [hasShownToday, setHasShownToday] = useState(false);
   const [showRecommended, setShowRecommended] = useState(false);
 
   async function handleFetchSummary(link: string) {
@@ -119,14 +119,24 @@ export default function Home() {
     setCurrentRecs(shuffleArray(avail).slice(0, 5));
   }, [recommendedFeeds]);
 
-  // Determine if we should show recommendations today
+  // Determine today and check localStorage (client-side only)
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const d = new Date().toISOString().slice(0, 10);
+    setToday(d);
+    const shown = localStorage.getItem('recommendedShownDate') === d;
+    setHasShownToday(shown);
+  }, []);
+
+  // Decide to show recommendations
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
     if (!hasShownToday && feeds.length < 5) {
       setShowRecommended(true);
       localStorage.setItem('recommendedShownDate', today);
       setHasShownToday(true);
     }
-  }, [feeds]);
+  }, [feeds, hasShownToday, today]);
 
   async function fetchFeeds() {
     setLoading(true);
