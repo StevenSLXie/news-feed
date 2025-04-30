@@ -336,7 +336,7 @@ export default function Home() {
           <button onClick={() => signOut()} className="text-gray-700 bg-gray-100 border border-gray-300 rounded px-3 py-1.5 hover:bg-neutral-100 transition">Sign out</button>
         </div>
       </div>
-      <form onSubmit={addFeed} className="flex gap-2 mb-8">
+      <form onSubmit={addFeed} className="flex items-center gap-2 mb-8">
         <input
           type="url"
           placeholder="Add RSS feed URL..."
@@ -347,6 +347,13 @@ export default function Home() {
         />
         <button type="submit" className="px-5 py-2 rounded bg-black text-white font-medium hover:bg-neutral-800 transition disabled:opacity-60 shadow-sm border border-black/10" disabled={loading}>
           Add
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowRecommended(prev => !prev)}
+          className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 hover:bg-neutral-100 transition text-sm"
+        >
+          {showRecommended ? 'Hide Recommendations' : 'Show Recommendations'}
         </button>
       </form>
       {error && <div className="text-red-600 mb-4 text-sm">{error}</div>}
