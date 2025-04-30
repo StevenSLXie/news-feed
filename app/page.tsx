@@ -419,29 +419,21 @@ export default function Home() {
           {feeds.length === 0 && <li className="text-gray-400 py-2">No feeds subscribed.</li>}
         </ul>
       )}
-      <h2 className="font-semibold mt-6 mb-2 flex flex-wrap items-center gap-2">
-        <div className="flex flex-wrap gap-2">
-          <button
-            className={`px-3 py-1.5 rounded font-medium text-sm transition border ${tab === 'all' ? 'bg-black text-white border-black' : 'bg-white text-gray-700 border-gray-300 hover:bg-neutral-100'}`}
-            onClick={() => setTab('all')}
-          >
-            All
-          </button>
-          <button
-            className={`px-3 py-1.5 rounded font-medium text-sm transition border ${tab === 'bySource' ? 'bg-black text-white border-black' : 'bg-white text-gray-700 border-gray-300 hover:bg-neutral-100'}`}
-            onClick={() => setTab('bySource')}
-          >
-            By Source
-          </button>
-          <button
-            className={`px-3 py-1.5 rounded font-medium text-sm transition border ${tab === 'saved' ? 'bg-black text-white border-black' : 'bg-white text-gray-700 border-gray-300 hover:bg-neutral-100'}`}
-            onClick={() => setTab('saved')}
-          >
-            Saved
-          </button>
-        </div>
-        <button onClick={fetchArticles} className="mt-2 sm:mt-0 ml-0 sm:ml-2 px-2 py-1 sm:px-3 sm:py-1.5 rounded border border-black/10 bg-black text-white text-xs sm:text-sm font-medium hover:bg-neutral-800 transition shadow-sm">Refresh</button>
-      </h2>
+      <div className="mt-6 mb-2 flex flex-col sm:flex-row sm:items-center gap-2">
+        <select
+          value={tab}
+          onChange={e => setTab(e.target.value as 'all'|'bySource'|'saved')}
+          className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 text-sm focus:ring-2 focus:ring-neutral-400"
+        >
+          <option value="all">All</option>
+          <option value="bySource">By Source</option>
+          <option value="saved">Saved</option>
+        </select>
+        <button
+          onClick={fetchArticles}
+          className="px-3 py-1.5 rounded border border-black/10 bg-black text-white text-sm font-medium hover:bg-neutral-800 transition shadow-sm"
+        >Refresh</button>
+      </div>
       {tab === 'all' && (
         <ul className="list-none p-0">
           {loadingArticles ? (
