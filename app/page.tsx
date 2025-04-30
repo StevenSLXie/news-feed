@@ -398,23 +398,8 @@ export default function Home() {
           </div>
         </div>
       )}
-      <h2 className="mt-8 text-lg font-medium cursor-pointer select-none flex items-center gap-2" onClick={() => setFeedsCollapsed(c => !c)}>
-        Subscribed Feeds
-        <span className="text-gray-400 text-base">{feedsCollapsed ? '▼' : '▲'}</span>
-      </h2>
-      {!feedsCollapsed && (
-        <ul className="pl-0 list-none mb-8 divide-y divide-gray-100">
-          {feeds.map(feed => (
-            <li key={feed.id} className="flex items-center py-2">
-              <span className="flex-1 truncate text-gray-800">{feed.title ? feed.title : feed.url}</span>
-              <button onClick={() => removeFeed(feed.id)} className="ml-2 text-red-500 bg-transparent border-none text-lg hover:bg-red-50 rounded-full w-8 h-8 flex items-center justify-center transition" title="Unsubscribe">×</button>
-            </li>
-          ))}
-          {feeds.length === 0 && <li className="text-gray-400 py-2">No feeds subscribed.</li>}
-        </ul>
-      )}
-      <h2 className="font-semibold text-xl mt-6 mb-2 flex items-center gap-3">
-        <div className="flex gap-2">
+      <h2 className="font-semibold mt-6 mb-2 flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             className={`px-3 py-1.5 rounded font-medium text-sm transition border ${tab === 'all' ? 'bg-black text-white border-black' : 'bg-white text-gray-700 border-gray-300 hover:bg-neutral-100'}`}
             onClick={() => setTab('all')}
@@ -434,8 +419,7 @@ export default function Home() {
             Saved
           </button>
         </div>
-        <span className="ml-4">Articles</span>
-        <button onClick={fetchArticles} className="ml-2 px-3 py-1.5 rounded border border-black/10 bg-black text-white text-sm font-medium hover:bg-neutral-800 transition shadow-sm">Refresh</button>
+        <button onClick={fetchArticles} className="mt-2 sm:mt-0 ml-0 sm:ml-2 px-2 py-1 sm:px-3 sm:py-1.5 rounded border border-black/10 bg-black text-white text-xs sm:text-sm font-medium hover:bg-neutral-800 transition shadow-sm">Refresh</button>
       </h2>
       {tab === 'all' && (
         <ul className="list-none p-0">
