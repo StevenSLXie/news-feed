@@ -369,32 +369,38 @@ export default function Home() {
               <li key={feed.url} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-b-0">
                 <span className="font-medium text-gray-900">{feed.name}</span>
                 <div className="flex gap-2">
-                  <button
-                    className="px-3 py-1.5 rounded bg-black text-white font-medium hover:bg-neutral-800 transition border border-black/10 shadow-sm text-xs"
-                    onClick={async () => {
-                      setHiddenRecommended(prev => [...prev, feed.url]);
-                      setError(null);
-                      setLoading(true);
-                      try {
-                        const res = await fetch('/api/feeds', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ url: feed.url }),
-                          credentials: 'include',
-                        });
-                        if (!res.ok) throw new Error();
-                        setNewFeedUrl('');
-                        await fetchFeeds();
-                        await fetchArticles();
-                        // remove subscribed feed from current batch
-                        setCurrentRecs(prev => prev.filter(f => f.url !== feed.url));
-                      } catch {
-                        setError('Failed to add feed');
-                      } finally {
-                        setLoading(false);
-                      }
-                    }}
-                  >Subscribe</button>
+                  {feeds.some(f => f.url === feed.url) ? (
+                    <button disabled className="px-3 py-1.5 rounded bg-gray-200 text-gray-500 text-xs">
+                      ✓ Subscribed
+                    </button>
+                  ) : (
+                    <button
+                      className="px-3 py-1.5 rounded bg-black text-white font-medium hover:bg-neutral-800 transition border border-black/10 shadow-sm text-xs"
+                      onClick={async () => {
+                        setHiddenRecommended(prev => [...prev, feed.url]);
+                        setError(null);
+                        setLoading(true);
+                        try {
+                          const res = await fetch('/api/feeds', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ url: feed.url }),
+                            credentials: 'include',
+                          });
+                          if (!res.ok) throw new Error();
+                          setNewFeedUrl('');
+                          await fetchFeeds();
+                          await fetchArticles();
+                          // remove subscribed feed from current batch
+                          setCurrentRecs(prev => prev.filter(f => f.url !== feed.url));
+                        } catch {
+                          setError('Failed to add feed');
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                    >Subscribe</button>
+                  )}
                 </div>
               </li>
             ))}
