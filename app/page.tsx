@@ -309,7 +309,7 @@ export default function Home() {
         </button>
       </form>
       {error && <div className="text-red-600 mb-4 text-sm">{error}</div>}
-      {feeds.length === 0 && !dismissedRecommended && (
+      {!loading && feeds.length === 0 && !dismissedRecommended && (
         <div className="mb-8 p-5 rounded-lg bg-white border border-gray-200 shadow-sm">
           <div className="font-semibold mb-2 text-lg">Recommended Feeds</div>
           <ul className="mb-4">
