@@ -301,10 +301,12 @@ export default function Home() {
             Sign in with Google
           </button>
           <button onClick={() => signIn('github')} className="w-full sm:w-auto text-gray-700 bg-gray-100 border border-gray-300 rounded px-3 py-1.5 hover:bg-gray-200 transition flex items-center justify-center">
-            <img src="https://www.svgrepo.com/show/475656/github.svg" alt="GitHub" className="w-5 h-5 mr-2" />
+            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v10/icons/github.svg" alt="GitHub" className="w-5 h-5 mr-2" />
             Sign in with GitHub
           </button>
         </div>
+        {/* Separator between OAuth and email login */}
+        <div className="my-4 border-t border-gray-300" />
         <div className="mt-4 flex flex-col sm:flex-row items-center gap-2">
           <input
             type="email"
