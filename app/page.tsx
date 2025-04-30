@@ -312,7 +312,7 @@ export default function Home() {
   if (!session) {
     return (
       <main className="max-w-xl mx-auto px-3 sm:px-6 py-6 font-sans">
-        <h1 className="font-semibold text-2xl tracking-tight text-gray-900">My News Feeds</h1>
+        <h1 className="font-semibold text-2xl tracking-tight text-gray-900">MyDailyNews</h1>
         <div className="text-sm text-gray-600 flex items-center gap-3">
           <button onClick={() => signIn('google')} className="text-gray-700 bg-gray-100 border border-gray-300 rounded px-3 py-1.5 hover:bg-gray-200 transition">
             <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5 mr-2" />
@@ -330,7 +330,7 @@ export default function Home() {
   return (
     <main className="max-w-xl mx-auto px-3 sm:px-6 py-6 font-sans">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="font-semibold text-2xl tracking-tight text-gray-900">My News Feeds</h1>
+        <h1 className="font-semibold text-2xl tracking-tight text-gray-900">MyDailyNews</h1>
         <div className="text-sm text-gray-600 flex items-center gap-3">
           <span>Signed in as {session.user?.email}</span>
           <button onClick={() => signOut()} className="text-gray-700 bg-gray-100 border border-gray-300 rounded px-3 py-1.5 hover:bg-neutral-100 transition">Sign out</button>
@@ -546,3 +546,5 @@ export default function Home() {
     </main>
   );
 }
+
+export const metadata = { title: 'MyDailyNews' };
