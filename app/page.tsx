@@ -20,6 +20,11 @@ interface Article {
   saved?: boolean;
 }
 
+// Utility to shuffle array
+function shuffleArray<T>(arr: T[]): T[] {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
 export default function Home() {
   const { data: session, status } = useSession();
   const [feeds, setFeeds] = useState<Feed[]>([]);
@@ -34,6 +39,7 @@ export default function Home() {
   const recommendedFeeds = useRecommendedFeeds();
   const [dismissedRecommended, setDismissedRecommended] = useState(false);
   const [hiddenRecommended, setHiddenRecommended] = useState<string[]>([]);
+  const [currentRecs, setCurrentRecs] = useState<typeof recommendedFeeds>([]);
   const [summaries, setSummaries] = useState<Record<string, string>>({});
   const [loadingSummaries, setLoadingSummaries] = useState<Record<string, boolean>>({});
   const [errorSummaries, setErrorSummaries] = useState<Record<string, string | null>>({});
@@ -101,6 +107,11 @@ export default function Home() {
   useEffect(() => {
     if (tab === 'saved') fetchSavedArticles();
   }, [tab]);
+
+  useEffect(() => {
+    const avail = recommendedFeeds.filter(f => !hiddenRecommended.includes(f.url));
+    setCurrentRecs(shuffleArray(avail).slice(0, 5));
+  }, [recommendedFeeds, hiddenRecommended]);
 
   async function fetchFeeds() {
     setLoading(true);
@@ -313,7 +324,7 @@ export default function Home() {
         <div className="mb-8 p-5 rounded-lg bg-white border border-gray-200 shadow-sm">
           <div className="font-semibold mb-2 text-lg">Recommended Feeds</div>
           <ul className="mb-4">
-            {recommendedFeeds.filter(f => !hiddenRecommended.includes(f.url)).map(feed => (
+            {currentRecs.map(feed => (
               <li key={feed.url} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-b-0">
                 <span className="font-medium text-gray-900">{feed.name}</span>
                 <div className="flex gap-2">
@@ -345,10 +356,19 @@ export default function Home() {
               </li>
             ))}
           </ul>
-          <button
-            className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-600 font-medium hover:bg-neutral-100 transition text-xs"
-            onClick={() => setDismissedRecommended(true)}
-          >Dismiss All</button>
+          <div className="flex gap-2">
+            <button
+              className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-600 font-medium hover:bg-neutral-100 transition text-xs"
+              onClick={() => setDismissedRecommended(true)}
+            >Dismiss All</button>
+            <button
+              className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-600 font-medium hover:bg-neutral-100 transition text-xs"
+              onClick={() => {
+                const avail = recommendedFeeds.filter(f => !hiddenRecommended.includes(f.url));
+                setCurrentRecs(shuffleArray(avail).slice(0, 5));
+              }}
+            >换一批</button>
+          </div>
         </div>
       )}
       <h2 className="mt-8 text-lg font-medium cursor-pointer select-none flex items-center gap-2" onClick={() => setFeedsCollapsed(c => !c)}>

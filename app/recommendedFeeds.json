@@ -1,7 +1,14 @@
 [
-  { "name": "NY Times", "url": "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml" },
+  { "name": "NY Times - Home", "url": "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml" },
   { "name": "BBC World", "url": "http://feeds.bbci.co.uk/news/world/rss.xml" },
   { "name": "Reuters Top News", "url": "http://feeds.reuters.com/reuters/topNews" },
   { "name": "Hacker News", "url": "https://hnrss.org/frontpage" },
-  { "name": "SCMP China Politics", "url": "https://www.scmp.com/rss/318198/feed"}
+  { "name": "SCMP China Politics", "url": "https://www.scmp.com/rss/318198/feed" },
+  { "name": "The Guardian US", "url": "https://www.theguardian.com/us/rss" },
+  { "name": "AP News Top Stories", "url": "https://feeds.apnews.com/apf-topnews" },
+  { "name": "Al Jazeera English", "url": "https://www.aljazeera.com/xml/rss/all.xml" },
+  { "name": "TechCrunch", "url": "http://feeds.feedburner.com/TechCrunch/" },
+  { "name": "Wired", "url": "https://www.wired.com/feed/rss" },
+  { "name": "NPR News", "url": "https://feeds.npr.org/1001/rss.xml" },
+  { "name": "Engadget", "url": "https://www.engadget.com/rss.xml" }
 ]
