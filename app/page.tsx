@@ -55,8 +55,6 @@ export default function Home() {
   const [justAction, setJustAction] = useState<{ link: string; type: 'saved' | 'removed' } | null>(null);
 
   // Daily recommendation throttle (client-only)
-  const [today, setToday] = useState<string>('');
-  const [hasShownToday, setHasShownToday] = useState(false);
   const [showRecommended, setShowRecommended] = useState(false);
 
   async function handleFetchSummary(link: string) {
@@ -123,15 +121,6 @@ export default function Home() {
     const avail = recommendedFeeds.filter(f => !hiddenRecommended.includes(f.url));
     setCurrentRecs(shuffleArray(avail).slice(0, 5));
   }, [recommendedFeeds]);
-
-  // Determine today and check localStorage (client-side only)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const d = new Date().toISOString().slice(0, 10);
-    setToday(d);
-    const shown = localStorage.getItem('recommendedShownDate') === d;
-    setHasShownToday(shown);
-  }, []);
 
   async function fetchFeeds() {
     setLoading(true);
