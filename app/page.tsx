@@ -350,7 +350,10 @@ export default function Home() {
         </button>
         <button
           type="button"
-          onClick={() => setShowRecommended(prev => !prev)}
+          onClick={() => {
+            setDismissedRecommended(false);
+            setShowRecommended(prev => !prev);
+          }}
           className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 hover:bg-neutral-100 transition text-sm"
         >
           {showRecommended ? 'Hide Recommendations' : 'Show Recommendations'}
