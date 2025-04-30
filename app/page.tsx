@@ -315,7 +315,7 @@ export default function Home() {
           <button onClick={() => signOut()} className="text-gray-700 bg-gray-100 border border-gray-300 rounded px-3 py-1.5 hover:bg-neutral-100 transition">Sign out</button>
         </div>
       </div>
-      <form onSubmit={addFeed} className="flex items-center gap-2 mb-8">
+      <form onSubmit={addFeed} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-8">
         <input
           type="url"
           placeholder="Add RSS feed URL..."
@@ -324,7 +324,7 @@ export default function Home() {
           className="flex-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-neutral-400 text-base bg-white placeholder-gray-400"
           required
         />
-        <button type="submit" className="px-5 py-2 rounded bg-black text-white font-medium hover:bg-neutral-800 transition disabled:opacity-60 shadow-sm border border-black/10" disabled={loading}>
+        <button type="submit" className="w-full sm:w-auto px-5 py-2 rounded bg-black text-white font-medium hover:bg-neutral-800 transition disabled:opacity-60 shadow-sm border border-black/10 text-center" disabled={loading}>
           Add
         </button>
         <button
@@ -333,7 +333,7 @@ export default function Home() {
             setDismissedRecommended(false);
             setShowRecommended(prev => !prev);
           }}
-          className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 hover:bg-neutral-100 transition text-sm"
+          className="w-full sm:w-auto px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 hover:bg-neutral-100 transition text-sm text-center"
         >
           {showRecommended ? 'Hide Recommendations' : 'Show Recommendations'}
         </button>
@@ -408,11 +408,11 @@ export default function Home() {
           {feeds.length === 0 && <li className="text-gray-400 py-2">No feeds subscribed.</li>}
         </ul>
       )}
-      <div className="mt-6 mb-2 flex flex-col sm:flex-row sm:items-center gap-2">
+      <div className="mt-6 mb-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
         <select
           value={tab}
           onChange={e => setTab(e.target.value as 'all'|'bySource'|'saved')}
-          className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 text-sm focus:ring-2 focus:ring-neutral-400"
+          className="w-full sm:w-auto px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 text-sm focus:ring-2 focus:ring-neutral-400"
         >
           <option value="all">All</option>
           <option value="bySource">By Source</option>
@@ -420,7 +420,7 @@ export default function Home() {
         </select>
         <button
           onClick={fetchArticles}
-          className="px-3 py-1.5 rounded border border-black/10 bg-black text-white text-sm font-medium hover:bg-neutral-800 transition shadow-sm"
+          className="w-full sm:w-auto px-3 py-1.5 rounded border border-black/10 bg-black text-white text-sm font-medium hover:bg-neutral-800 transition shadow-sm text-center"
         >Refresh</button>
       </div>
       {tab === 'all' && (
