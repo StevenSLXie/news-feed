@@ -136,9 +136,11 @@ export default function Home() {
   }, [tab]);
 
   useEffect(() => {
-    const avail = recommendedFeeds.filter(f => !hiddenRecommended.includes(f.url));
-    setCurrentRecs(shuffleArray(avail).slice(0, 5));
-  }, [recommendedFeeds, hiddenRecommended]);
+    if (showRecommended && !dismissedRecommended) {
+      const avail = recommendedFeeds.filter(f => !hiddenRecommended.includes(f.url));
+      setCurrentRecs(shuffleArray(avail).slice(0, 5));
+    }
+  }, [recommendedFeeds, showRecommended, dismissedRecommended]);
 
   async function fetchFeeds() {
     setLoading(true);
