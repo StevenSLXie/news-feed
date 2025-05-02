@@ -348,8 +348,8 @@ export default function Home() {
         <div className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-3">
           <span>Signed in as {session.user?.email}</span>
           <button onClick={() => signOut()} className="text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 hover:bg-neutral-100 dark:hover:bg-gray-600 transition">Sign out</button>
-          <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="p-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-            {theme === 'dark' ? '☀️' : '🌙'}
+          <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-200 hover:bg-neutral-100 dark:hover:bg-gray-600 transition">
+            {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
           </button>
         </div>
       </div>
