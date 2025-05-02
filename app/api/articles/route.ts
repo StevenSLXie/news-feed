@@ -14,7 +14,11 @@ async function getUserIdFromSession() {
   return user?.id || null;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Pagination
+  const url = new URL(request.url);
+  const page = parseInt(url.searchParams.get('page') || '1', 10);
+  const pageSize = parseInt(url.searchParams.get('pageSize') || '30', 10);
   try {
     const userId = await getUserIdFromSession();
     if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -52,7 +56,10 @@ export async function GET() {
       const bDate = b.published ? new Date(b.published).getTime() : 0;
       return bDate - aDate;
     });
-    return Response.json(articles, { status: 200 });
+    // Slice for pagination
+    const start = (page - 1) * pageSize;
+    const pageItems = articles.slice(start, start + pageSize);
+    return Response.json(pageItems, { status: 200 });
   } catch (error) {
     console.error('GET /api/articles: Unexpected error', error);
     return Response.json({ error: 'Failed to fetch articles' }, { status: 500 });

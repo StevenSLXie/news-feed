@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useRecommendedFeeds } from "./hooks/useRecommendedFeeds";
 
@@ -112,7 +112,8 @@ export default function Home() {
   }
 
   useEffect(() => {
-    Promise.all([fetchFeeds(), fetchArticles()]);
+    fetchFeeds();
+    loadPage(1);
   }, []);
 
   useEffect(() => {
@@ -152,42 +153,36 @@ export default function Home() {
     }
   }
 
-  async function fetchArticles() {
+  // Infinite scroll
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const loaderRef = useRef<HTMLDivElement | null>(null);
+  async function loadPage(pageNumber = 1) {
     setError(null);
-    setLoadingArticles(true);
+    pageNumber === 1 ? setLoadingArticles(true) : setLoadingMore(true);
     try {
-      const res = await fetch('/api/articles');
-      const data = await res.json();
-      if (!Array.isArray(data)) {
-        setArticles([]);
-        setLoadingArticles(false);
-        return;
-    }
-      const stateRes = await fetch('/api/article-state-bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ articles: data }),
-        credentials: 'include'
-      });
-      let stateMap: Record<string, { read: boolean, saved: boolean }> = {};
-      if (stateRes.ok) {
-        stateMap = await stateRes.json();
-      }
-      setArticles((prev: Article[]) => {
-        const prevLinks = new Set(prev.map(a => a.link));
-        const newArticles = data.filter((a: Article) => !prevLinks.has(a.link || ''));
-        const updated = [...prev];
-        for (const a of newArticles) {
-          updated.push({ ...a, ...stateMap[a.link || ''] });
-        }
-        return updated.map(a => ({ ...a, ...stateMap[a.link || ''] }));
-      });
+      const res = await fetch(`/api/articles?page=${pageNumber}&pageSize=30`);
+      const data = await res.json(); if (!Array.isArray(data)) throw new Error();
+      const stateRes = await fetch('/api/article-state-bulk', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({articles:data}), credentials: 'include' });
+      const stateMap = stateRes.ok ? await stateRes.json() : {};
+      const enriched = data.map((a: Article) => ({ ...a, ...stateMap[a.link||''] }));
+      setArticles(prev => pageNumber===1 ? enriched : [...prev, ...enriched]);
+      setHasMore(data.length === 30);
     } catch {
       setError('Failed to load articles');
     } finally {
-      setLoadingArticles(false);
+      pageNumber === 1 ? setLoadingArticles(false) : setLoadingMore(false);
     }
   }
+  useEffect(() => {
+    if (loadingMore || !hasMore) return;
+    const obs = new IntersectionObserver(entries => { if (entries[0].isIntersecting) setPage(p=>p+1); }, { rootMargin: '200px' });
+    const el = loaderRef.current;
+    if (el) obs.observe(el);
+    return () => { if (el) obs.unobserve(el); };
+  }, [loadingMore, hasMore]);
+  useEffect(() => { if (page>1) loadPage(page); }, [page]);
 
   async function fetchSavedArticles() {
     setErrorSaved(null);
@@ -218,7 +213,9 @@ export default function Home() {
       if (!res.ok) throw new Error();
       setNewFeedUrl('');
       await fetchFeeds();
-      await fetchArticles();
+      await loadPage(1);
+      // remove subscribed feed from current batch
+      setCurrentRecs(prev => prev.filter(f => f.url !== newFeedUrl));
     } catch {
       setError('Failed to add feed');
     } finally {
@@ -238,7 +235,7 @@ export default function Home() {
       });
       if (!res.ok) throw new Error();
       await fetchFeeds();
-      await fetchArticles();
+      await loadPage(1);
     } catch {
       setError('Failed to remove feed');
     } finally {
@@ -406,7 +403,7 @@ export default function Home() {
                           if (!res.ok) throw new Error();
                           setNewFeedUrl('');
                           await fetchFeeds();
-                          await fetchArticles();
+                          await loadPage(1);
                           // remove subscribed feed from current batch
                           setCurrentRecs(prev => prev.filter(f => f.url !== feed.url));
                         } catch {
@@ -463,7 +460,7 @@ export default function Home() {
           <option value="saved">Saved</option>
         </select>
         <button
-          onClick={fetchArticles}
+          onClick={() => loadPage(1)}
           className="w-full sm:w-auto px-3 py-1.5 rounded border border-black/10 bg-black text-white text-sm font-medium hover:bg-neutral-800 transition shadow-sm text-center"
         >Refresh</button>
       </div>
@@ -494,6 +491,12 @@ export default function Home() {
             })
           )}
         </ul>
+      )}
+      {tab === 'all' && (
+        <>
+          <div ref={loaderRef}></div>
+          {loadingMore && <div className="text-center py-4 text-gray-500 dark:text-gray-400">Loading more...</div>}
+        </>
       )}
       {tab === 'bySource' && (
         <ul className="list-none p-0">
