@@ -236,8 +236,7 @@ export default function Home() {
   // Archive: mark as read and remove from list
   async function archiveArticle(article: Article) {
     await updateArticleState(article, true, article.saved);
-    // mark as read instead of removing
-    setArticles(prev => prev.map(a => a.link === article.link ? { ...a, read: true } : a));
+    setArticles(prev => prev.filter(a => a.link !== article.link));
   }
 
   async function toggleSaved(article: Article) {
@@ -462,7 +461,7 @@ export default function Home() {
             articles.map((article, idx) => {
               return (
                 <li key={idx} className="mb-5 pb-4 border-b border-gray-100 bg-white rounded-lg shadow-sm px-3 py-3 flex flex-col gap-2">
-                  <a href={article.link} target="_blank" rel="noopener noreferrer" className={`block text-base font-medium hover:underline break-words ${article.read ? 'line-through text-gray-400' : 'text-blue-700'}`}>{article.title}</a>
+                  <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline break-words">{article.title}</a>
                   <div className="text-xs text-gray-500">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
                   <div className="flex items-center gap-2 mt-2 relative">
                     <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Archive">✅</button>
@@ -503,7 +502,7 @@ export default function Home() {
                       ) : (
                         feedArticles.map((article, idx) => (
                           <li key={idx} className="mb-3 pb-2 border-b border-gray-50 bg-white rounded px-2 py-2 flex flex-col gap-2">
-                            <a href={article.link} target="_blank" rel="noopener noreferrer" className={`block text-base font-medium hover:underline break-words ${article.read ? 'line-through text-gray-400' : 'text-blue-700'}`}>{article.title}</a>
+                            <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline break-words">{article.title}</a>
                             <div className="text-xs text-gray-500">{article.published ? new Date(article.published).toLocaleString() : ''}</div>
                             <div className="flex items-center gap-2 mt-1 relative">
                               <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Archive">✅</button>
@@ -537,7 +536,7 @@ export default function Home() {
           ) : (
             savedArticles.map((article, idx) => (
               <li key={idx} className="mb-5 pb-4 border-b border-gray-100 bg-white rounded-lg shadow-sm px-3 py-3 flex flex-col gap-2">
-                <a href={article.link} target="_blank" rel="noopener noreferrer" className={`block text-base font-medium hover:underline break-words ${article.read ? 'line-through text-gray-400' : 'text-blue-700'}`}>{article.title}</a>
+                <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline break-words">{article.title}</a>
                 <div className="text-xs text-gray-500">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
                 <div className="flex items-center gap-2 mt-2">
                   <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Archive">✅</button>
