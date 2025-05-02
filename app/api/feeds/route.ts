@@ -115,6 +115,8 @@ export async function DELETE(req: NextRequest) {
   const userId = await getUserIdFromSession();
   if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   try {
+    // Remove associated articles to satisfy FK constraints
+    await prisma.article.deleteMany({ where: { feedId: id, userId } });
     await prisma.feed.delete({ where: { id, userId } });
     return new Response(null, { status: 204 });
   } catch (error) {
