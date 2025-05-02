@@ -18,8 +18,8 @@ export default function Header({ sessionEmail, theme, setTheme }: HeaderProps) {
           MyDailyNews
         </h1>
       </div>
-      <div className="w-full sm:w-auto text-sm text-gray-600 dark:text-gray-300 flex items-center gap-3">
-        <span>Signed in as {sessionEmail}</span>
+      <div className="flex items-center gap-3">
+        {/* removed user email display */}
         <button
           onClick={() => signOut()}
           className="text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 hover:bg-neutral-100 dark:hover:bg-gray-600 transition"
