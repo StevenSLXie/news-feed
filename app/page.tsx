@@ -158,6 +158,7 @@ export default function Home() {
   const [loadingMore, setLoadingMore] = useState(false);
   const loaderRef = useRef<HTMLDivElement | null>(null);
   async function loadPage(pageNumber = 1) {
+    console.log('loadPage called for page', pageNumber);
     setError(null);
     if (pageNumber === 1) {
       setLoadingArticles(true);
@@ -183,19 +184,37 @@ export default function Home() {
     }
   }
   useEffect(() => {
-    if (loadingMore || !hasMore) return;
+    console.log('Infinite scroll useEffect: loadingMore, hasMore', loadingMore, hasMore);
     const el = loaderRef.current;
+    console.log('Sentinel ref element:', el);
     if (!el) return;
     const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        console.log('Infinite scroll: loading page', page + 1);
-        setPage((p) => p + 1);
-      }
-    }, { rootMargin: '200px' });
+      console.log('IO callback entries:', entries, 'scrollHeight:', document.body.scrollHeight, 'innerHeight:', window.innerHeight);
+      entries.forEach(entry => {
+        console.log('Entry isIntersecting:', entry.isIntersecting);
+        if (entry.isIntersecting) {
+          console.log('IO: loading next page', page + 1);
+          setPage(p => p + 1);
+        }
+      });
+    }, { rootMargin: '0px', threshold: 0 });
     observer.observe(el);
     return () => observer.disconnect();
   }, [loadingMore, hasMore]);
+
   useEffect(() => { if (page>1) loadPage(page); }, [page]);
+
+  useEffect(() => {
+    function handleScroll() {
+      if (loadingMore || !hasMore) return;
+      if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 100) {
+        console.log('Scroll near bottom: scheduling page', page + 1);
+        setPage(p => p + 1);
+      }
+    }
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loadingMore, hasMore, page]);
 
   async function fetchSavedArticles() {
     setErrorSaved(null);
@@ -507,7 +526,7 @@ export default function Home() {
       )}
       {tab === 'all' && (
         <>
-          <div ref={loaderRef} className="h-1 w-full"></div>
+          <div ref={loaderRef} className="h-10 w-full"></div>
           {loadingMore && <div className="text-center py-4 text-gray-500 dark:text-gray-400">Loading more...</div>}
         </>
       )}
