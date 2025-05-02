@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useSession, signIn } from "next-auth/react";
+import { useTheme } from './hooks/useTheme';
 import { useRecommendedFeeds } from "./hooks/useRecommendedFeeds";
 import Header from './components/Header';
 import FeedForm from './components/FeedForm';
@@ -35,19 +36,7 @@ function shuffleArray<T>(arr: T[]): T[] {
 
 export default function Home() {
   const { data: session, status } = useSession();
-  const [theme, setTheme] = useState<'light'|'dark'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('theme');
-      if (saved === 'dark' || saved === 'light') return saved;
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    return 'light';
-  });
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'dark') root.classList.add('dark'); else root.classList.remove('dark');
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+  const { theme, setTheme } = useTheme();
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
   const [newFeedUrl, setNewFeedUrl] = useState('');
