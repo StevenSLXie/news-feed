@@ -32,6 +32,19 @@ function shuffleArray<T>(arr: T[]): T[] {
 
 export default function Home() {
   const { data: session, status } = useSession();
+  const [theme, setTheme] = useState<'light'|'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'dark' || saved === 'light') return saved;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'light';
+  });
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') root.classList.add('dark'); else root.classList.remove('dark');
+    localStorage.setItem('theme', theme);
+  }, [theme]);
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
   const [newFeedUrl, setNewFeedUrl] = useState('');
@@ -293,7 +306,7 @@ export default function Home() {
 
   if (!session) {
     return (
-      <main className="max-w-xl mx-auto px-3 sm:px-6 py-6 font-sans">
+      <main className="max-w-xl mx-auto px-3 sm:px-6 py-6 font-sans bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <h1 className="font-semibold text-2xl tracking-tight text-gray-900">MyDailyNews</h1>
         <div className="mt-4 text-sm flex flex-col sm:flex-row sm:items-center gap-3">
           <button onClick={() => signIn('google')} className="w-full sm:w-auto text-gray-700 bg-gray-100 border border-gray-300 rounded px-3 py-1.5 hover:bg-gray-200 transition flex items-center justify-center">
@@ -329,12 +342,15 @@ export default function Home() {
   }
 
   return (
-    <main className="max-w-xl mx-auto px-3 sm:px-6 py-6 font-sans">
+    <main className="max-w-xl mx-auto px-3 sm:px-6 py-6 font-sans bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="font-semibold text-2xl tracking-tight text-gray-900">MyDailyNews</h1>
-        <div className="text-sm text-gray-600 flex items-center gap-3">
+        <h1 className="font-semibold text-2xl tracking-tight text-gray-900 dark:text-gray-100">MyDailyNews</h1>
+        <div className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-3">
           <span>Signed in as {session.user?.email}</span>
-          <button onClick={() => signOut()} className="text-gray-700 bg-gray-100 border border-gray-300 rounded px-3 py-1.5 hover:bg-neutral-100 transition">Sign out</button>
+          <button onClick={() => signOut()} className="text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 hover:bg-neutral-100 dark:hover:bg-gray-600 transition">Sign out</button>
+          <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="p-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
         </div>
       </div>
       <form onSubmit={addFeed} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-8">
@@ -343,7 +359,7 @@ export default function Home() {
           placeholder="Add RSS feed URL..."
           value={newFeedUrl}
           onChange={e => setNewFeedUrl(e.target.value)}
-          className="flex-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-neutral-400 text-base bg-white placeholder-gray-400"
+          className="flex-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-neutral-400 text-base bg-white dark:bg-gray-800 placeholder-gray-400 dark:placeholder-gray-600"
           required
         />
         <button type="submit" className="w-full sm:w-auto px-5 py-2 rounded bg-black text-white font-medium hover:bg-neutral-800 transition disabled:opacity-60 shadow-sm border border-black/10 text-center" disabled={loading}>
@@ -355,22 +371,22 @@ export default function Home() {
             setDismissedRecommended(false);
             setShowRecommended(prev => !prev);
           }}
-          className="w-full sm:w-auto px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 hover:bg-neutral-100 transition text-sm text-center"
+          className="w-full sm:w-auto px-4 py-2 rounded border border-gray-300 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-neutral-100 dark:hover:bg-gray-700 transition text-sm text-center"
         >
           {showRecommended ? 'Hide Recommendations' : 'Show Recommendations'}
         </button>
       </form>
       {error && <div className="text-red-600 mb-4 text-sm">{error}</div>}
       {showRecommended && !dismissedRecommended && (
-        <div className="mb-8 p-5 rounded-lg bg-white border border-gray-200 shadow-sm">
+        <div className="mb-8 p-5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="font-semibold mb-2 text-lg">Recommended Feeds</div>
           <ul className="mb-4">
             {currentRecs.map(feed => (
-              <li key={feed.url} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-b-0">
-                <span className="font-medium text-gray-900">{feed.name}</span>
+              <li key={feed.url} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-700 last:border-b-0">
+                <span className="font-medium text-gray-900 dark:text-gray-200">{feed.name}</span>
                 <div className="flex gap-2">
                   {feeds.some(f => f.url === feed.url) ? (
-                    <button disabled className="px-3 py-1.5 rounded bg-gray-200 text-gray-500 text-xs">
+                    <button disabled className="px-3 py-1.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs">
                       ✓ Subscribed
                     </button>
                   ) : (
@@ -407,11 +423,11 @@ export default function Home() {
           </ul>
           <div className="flex gap-2">
             <button
-              className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-600 font-medium hover:bg-neutral-100 transition text-xs"
+              className="px-4 py-2 rounded border border-gray-300 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 font-medium hover:bg-neutral-100 dark:hover:bg-gray-700 transition text-xs"
               onClick={() => setDismissedRecommended(true)}
             >Close</button>
             <button
-              className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-600 font-medium hover:bg-neutral-100 transition text-xs"
+              className="px-4 py-2 rounded border border-gray-300 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 font-medium hover:bg-neutral-100 dark:hover:bg-gray-700 transition text-xs"
               onClick={() => {
                 const avail = recommendedFeeds.filter(f => !hiddenRecommended.includes(f.url));
                 setCurrentRecs(shuffleArray(avail).slice(0, 5));
@@ -423,24 +439,24 @@ export default function Home() {
       {/* Subscribed Feeds */}
       <h2 className="mt-8 text-lg font-medium cursor-pointer select-none flex items-center gap-2" onClick={() => setFeedsCollapsed(c => !c)}>
         Subscribed Feeds
-        <span className="text-gray-400 text-base">{feedsCollapsed ? '▼' : '▲'}</span>
+        <span className="text-gray-400 dark:text-gray-600 text-base">{feedsCollapsed ? '▼' : '▲'}</span>
       </h2>
       {!feedsCollapsed && (
-        <ul className="pl-0 list-none mb-8 divide-y divide-gray-100">
+        <ul className="pl-0 list-none mb-8 divide-y divide-gray-100 dark:divide-gray-700">
           {feeds.map(feed => (
             <li key={feed.id} className="flex items-center py-2">
-              <span className="flex-1 truncate text-gray-800">{feed.title ? feed.title : feed.url}</span>
-              <button onClick={() => removeFeed(feed.id)} className="ml-2 text-red-500 bg-transparent border-none text-lg hover:bg-red-50 rounded-full w-8 h-8 flex items-center justify-center transition" title="Unsubscribe">×</button>
+              <span className="flex-1 truncate text-gray-800 dark:text-gray-200">{feed.title ? feed.title : feed.url}</span>
+              <button onClick={() => removeFeed(feed.id)} className="ml-2 text-red-500 bg-transparent border-none text-lg hover:bg-red-50 dark:hover:bg-red-900 rounded-full w-8 h-8 flex items-center justify-center transition" title="Unsubscribe">×</button>
             </li>
           ))}
-          {feeds.length === 0 && <li className="text-gray-400 py-2">No feeds subscribed.</li>}
+          {feeds.length === 0 && <li className="text-gray-400 dark:text-gray-600 py-2">No feeds subscribed.</li>}
         </ul>
       )}
       <div className="mt-6 mb-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
         <select
           value={tab}
           onChange={e => setTab(e.target.value as 'all'|'bySource'|'saved')}
-          className="w-full sm:w-auto px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 text-sm focus:ring-2 focus:ring-neutral-400"
+          className="w-full sm:w-auto px-3 py-1.5 rounded border border-gray-300 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-sm focus:ring-2 focus:ring-neutral-400"
         >
           <option value="all">All</option>
           <option value="bySource">By Source</option>
@@ -454,21 +470,21 @@ export default function Home() {
       {tab === 'all' && (
         <ul className="list-none p-0">
           {loadingArticles ? (
-            <li className="text-gray-400">Loading articles...</li>
+            <li className="text-gray-400 dark:text-gray-600">Loading articles...</li>
           ) : articles.length === 0 ? (
-            <li className="text-gray-400">No articles to show.</li>
+            <li className="text-gray-400 dark:text-gray-600">No articles to show.</li>
           ) : (
             articles.map((article, idx) => {
               return (
-                <li key={idx} className="mb-5 pb-4 border-b border-gray-100 bg-white rounded-lg shadow-sm px-3 py-3 flex flex-col gap-2">
-                  <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline break-words">{article.title}</a>
-                  <div className="text-xs text-gray-500">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
+                <li key={idx} className="mb-5 pb-4 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg shadow-sm px-3 py-3 flex flex-col gap-2">
+                  <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 dark:text-blue-400 hover:underline break-words">{article.title}</a>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
                   <div className="flex items-center gap-2 mt-2 relative">
-                    <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Archive">✅</button>
-                    <button onClick={() => toggleSaved(article)} title={article.saved ? 'Unsave' : 'Save'} className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label={article.saved ? 'Unsave' : 'Save'}>🔖</button>
+                    <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition" aria-label="Archive">✅</button>
+                    <button onClick={() => toggleSaved(article)} title={article.saved ? 'Unsave' : 'Save'} className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition" aria-label={article.saved ? 'Unsave' : 'Save'}>🔖</button>
                     {justAction?.link === article.link && justAction?.type === 'saved' && <span className="text-green-500 ml-1 text-xs">Saved!</span>}
                     {justAction?.link === article.link && justAction?.type === 'removed' && <span className="text-red-500 ml-1 text-xs">Removed!</span>}
-                    <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="px-2 py-1 rounded text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 transition flex items-center gap-1" aria-label="AI Summary" disabled={!article.link}>💡 AI Summary</button>
+                    <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="px-2 py-1 rounded text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center gap-1" aria-label="AI Summary" disabled={!article.link}>💡 AI Summary</button>
                   </div>
                   {loadingSummaries[article.link!] && <span>Loading summary...</span>}
                   {summaries[article.link!] && <div className="mt-2 break-words whitespace-normal">{summaries[article.link!]}</div>}
@@ -482,34 +498,34 @@ export default function Home() {
       {tab === 'bySource' && (
         <ul className="list-none p-0">
           {feeds.length === 0 ? (
-            <li className="text-gray-400">No feeds subscribed.</li>
+            <li className="text-gray-400 dark:text-gray-600">No feeds subscribed.</li>
           ) : (
             feeds.map(feed => {
               const feedArticles = articles.filter(a => a.feedId === feed.id);
               return (
                 <li key={feed.id} className="mb-4">
                   <button
-                    className="w-full flex justify-between items-center px-4 py-2 rounded bg-white border border-gray-200 shadow-sm text-left font-medium text-gray-900 hover:bg-neutral-50 transition"
+                    className="w-full flex justify-between items-center px-4 py-2 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm text-left font-medium text-gray-900 dark:text-gray-200 hover:bg-neutral-50 dark:hover:bg-gray-700 transition"
                     onClick={() => setExpandedFeedId(expandedFeedId === feed.id ? null : feed.id)}
                   >
                     <span className="truncate">{feed.title || feed.url}</span>
-                    <span className="ml-2 text-xs text-gray-400">{expandedFeedId === feed.id ? '▲' : '▼'}</span>
+                    <span className="ml-2 text-xs text-gray-400 dark:text-gray-600">{expandedFeedId === feed.id ? '▲' : '▼'}</span>
                   </button>
                   {expandedFeedId === feed.id && (
-                    <ul className="mt-2 ml-2 border-l border-gray-200 pl-4">
+                    <ul className="mt-2 ml-2 border-l border-gray-200 dark:border-gray-700 pl-4">
                       {feedArticles.length === 0 ? (
-                        <li className="text-gray-400 text-sm">No articles from this source.</li>
+                        <li className="text-gray-400 dark:text-gray-600 text-sm">No articles from this source.</li>
                       ) : (
                         feedArticles.map((article, idx) => (
-                          <li key={idx} className="mb-3 pb-2 border-b border-gray-50 bg-white rounded px-2 py-2 flex flex-col gap-2">
-                            <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline break-words">{article.title}</a>
-                            <div className="text-xs text-gray-500">{article.published ? new Date(article.published).toLocaleString() : ''}</div>
+                          <li key={idx} className="mb-3 pb-2 border-b border-gray-50 dark:border-gray-700 bg-white dark:bg-gray-900 rounded px-2 py-2 flex flex-col gap-2">
+                            <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 dark:text-blue-400 hover:underline break-words">{article.title}</a>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">{article.published ? new Date(article.published).toLocaleString() : ''}</div>
                             <div className="flex items-center gap-2 mt-1 relative">
-                              <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Archive">✅</button>
-                              <button onClick={() => toggleSaved(article)} title={article.saved ? 'Unsave' : 'Save'} className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label={article.saved ? 'Unsave' : 'Save'}>🔖</button>
+                              <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition" aria-label="Archive">✅</button>
+                              <button onClick={() => toggleSaved(article)} title={article.saved ? 'Unsave' : 'Save'} className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition" aria-label={article.saved ? 'Unsave' : 'Save'}>🔖</button>
                               {justAction?.link === article.link && justAction?.type === 'saved' && <span className="text-green-500 ml-1 text-xs">Saved!</span>}
                               {justAction?.link === article.link && justAction?.type === 'removed' && <span className="text-red-500 ml-1 text-xs">Removed!</span>}
-                              <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="px-2 py-1 rounded text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 transition flex items-center gap-1" aria-label="AI Summary" disabled={!article.link}>💡 AI Summary</button>
+                              <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="px-2 py-1 rounded text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center gap-1" aria-label="AI Summary" disabled={!article.link}>💡 AI Summary</button>
                             </div>
                             {loadingSummaries[article.link!] && <span>Loading summary...</span>}
                             {summaries[article.link!] && <div className="w-full mt-2 break-words whitespace-normal">{summaries[article.link!]}</div>}
@@ -528,21 +544,21 @@ export default function Home() {
       {tab === 'saved' && (
         <ul className="list-none p-0">
           {loadingSaved ? (
-            <li className="text-gray-400">Loading saved articles...</li>
+            <li className="text-gray-400 dark:text-gray-600">Loading saved articles...</li>
           ) : errorSaved ? (
             <li className="text-red-500">{errorSaved}</li>
           ) : savedArticles.length === 0 ? (
-            <li className="text-gray-400">No saved articles.</li>
+            <li className="text-gray-400 dark:text-gray-600">No saved articles.</li>
           ) : (
             savedArticles.map((article, idx) => (
-              <li key={idx} className="mb-5 pb-4 border-b border-gray-100 bg-white rounded-lg shadow-sm px-3 py-3 flex flex-col gap-2">
-                <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 hover:underline break-words">{article.title}</a>
-                <div className="text-xs text-gray-500">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
+              <li key={idx} className="mb-5 pb-4 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg shadow-sm px-3 py-3 flex flex-col gap-2">
+                <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 dark:text-blue-400 hover:underline break-words">{article.title}</a>
+                <div className="text-xs text-gray-500 dark:text-gray-400">{article.feedTitle} &middot; {article.published ? new Date(article.published).toLocaleString() : ''}</div>
                 <div className="flex items-center gap-2 mt-2">
-                  <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 hover:text-gray-700 transition" aria-label="Archive">✅</button>
-                  <button onClick={() => removeSaved(article)} title="Remove" className="p-1 text-red-500 hover:text-red-700 transition" aria-label="Remove">🗑️</button>
+                  <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition" aria-label="Archive">✅</button>
+                  <button onClick={() => removeSaved(article)} title="Remove" className="p-1 text-red-500 dark:text-red-600 hover:text-red-700 dark:hover:text-red-500 transition" aria-label="Remove">🗑️</button>
                   {justAction?.link === article.link && justAction?.type === 'removed' && <span className="text-red-500 ml-1 text-xs">Removed!</span>}
-                  <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="px-2 py-1 rounded text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 transition flex items-center gap-1" aria-label="AI Summary" disabled={!article.link}>💡 AI Summary</button>
+                  <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="px-2 py-1 rounded text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center gap-1" aria-label="AI Summary" disabled={!article.link}>💡 AI Summary</button>
                 </div>
                 {loadingSummaries[article.link!] && <span>Loading summary...</span>}
                 {summaries[article.link!] && <div className="mt-2 break-words whitespace-normal">{summaries[article.link!]}</div>}
