@@ -1,16 +1,16 @@
 [
   { "name": "NY Times - Home", "url": "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml" },
   { "name": "BBC World", "url": "http://feeds.bbci.co.uk/news/world/rss.xml" },
-  { "name": "Reuters Top News", "url": "http://feeds.reuters.com/reuters/topNews" },
   { "name": "Hacker News", "url": "https://hnrss.org/frontpage" },
   { "name": "SCMP China Politics", "url": "https://www.scmp.com/rss/318198/feed" },
   { "name": "The Guardian US", "url": "https://www.theguardian.com/us/rss" },
-  { "name": "AP News Top Stories", "url": "https://feeds.apnews.com/apf-topnews" },
   { "name": "HuffPost World News", "url": "https://www.huffpost.com/section/world-news/feed" },
   { "name": "CNN International Edition", "url": "http://rss.cnn.com/rss/edition.rss" },
   { "name": "Fox News Latest", "url": "http://feeds.foxnews.com/foxnews/latest" },
   { "name": "WSJ World News", "url": "https://feeds.a.dj.com/rss/RSSWorldNews.xml" },
   { "name": "LA Times - World & Nation", "url": "https://www.latimes.com/world-nation/rss2.0.xml" },
   { "name": "Yahoo News Most Viewed", "url": "https://news.yahoo.com/rss/mostviewed" },
-  { "name": "Politico Playbook", "url": "https://rss.politico.com/playbook.xml" }
+  { "name": "Politico Playbook", "url": "https://rss.politico.com/playbook.xml" },
+  { "name": "Yonhap News", "url": "https://en.yna.co.kr/channel/index" },
+  { "name": "France 24", "url": "https://www.france24.com/en/rss" }
 ]
