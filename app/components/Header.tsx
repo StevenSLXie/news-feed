@@ -13,7 +13,7 @@ export default function Header({ sessionEmail, theme, setTheme }: HeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
       <div className="flex items-center gap-2">
-        <img src="/logo.svg" alt="MyDailyNews logo" className="h-10 w-auto" />
+        <img src="/logo.svg" alt="Logo" className="h-8 w-8" />
         <h1 className="font-semibold text-2xl tracking-tight text-gray-900 dark:text-gray-100">
           MyDailyNews
         </h1>
