@@ -133,11 +133,10 @@ export default function Home() {
     if (tab === 'saved') fetchSavedArticles();
   }, [tab]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const avail = recommendedFeeds.filter(f => !hiddenRecommended.includes(f.url));
     setCurrentRecs(shuffleArray(avail).slice(0, 5));
-  }, [recommendedFeeds]);
+  }, [recommendedFeeds, hiddenRecommended]);
 
   async function fetchFeeds() {
     setLoading(true);
@@ -160,7 +159,11 @@ export default function Home() {
   const loaderRef = useRef<HTMLDivElement | null>(null);
   async function loadPage(pageNumber = 1) {
     setError(null);
-    pageNumber === 1 ? setLoadingArticles(true) : setLoadingMore(true);
+    if (pageNumber === 1) {
+      setLoadingArticles(true);
+    } else {
+      setLoadingMore(true);
+    }
     try {
       const res = await fetch(`/api/articles?page=${pageNumber}&pageSize=30`);
       const data = await res.json(); if (!Array.isArray(data)) throw new Error();
@@ -172,7 +175,11 @@ export default function Home() {
     } catch {
       setError('Failed to load articles');
     } finally {
-      pageNumber === 1 ? setLoadingArticles(false) : setLoadingMore(false);
+      if (pageNumber === 1) {
+        setLoadingArticles(false);
+      } else {
+        setLoadingMore(false);
+      }
     }
   }
   useEffect(() => {
