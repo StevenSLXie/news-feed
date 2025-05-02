@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useSession, signIn } from "next-auth/react";
 import { useRecommendedFeeds } from "./hooks/useRecommendedFeeds";
 import Header from './components/Header';
-
+import FeedForm from './components/FeedForm';
 
 interface Feed {
   id: string;
@@ -375,29 +375,15 @@ export default function Home() {
   return (
     <main className="max-w-xl mx-auto px-3 sm:px-6 py-6 font-sans bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <Header sessionEmail={session.user?.email} theme={theme} setTheme={setTheme} />
-      <form onSubmit={addFeed} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-8">
-        <input
-          type="url"
-          placeholder="Add RSS feed URL..."
-          value={newFeedUrl}
-          onChange={e => setNewFeedUrl(e.target.value)}
-          className="flex-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-neutral-400 text-base bg-white dark:bg-gray-800 placeholder-gray-400 dark:placeholder-gray-600"
-          required
-        />
-        <button type="submit" className="w-full sm:w-auto px-5 py-2 rounded bg-black text-white font-medium hover:bg-neutral-800 transition disabled:opacity-60 shadow-sm border border-black/10 text-center" disabled={loading}>
-          Add
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setDismissedRecommended(false);
-            setShowRecommended(prev => !prev);
-          }}
-          className="w-full sm:w-auto px-4 py-2 rounded border border-gray-300 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-neutral-100 dark:hover:bg-gray-700 transition text-sm text-center"
-        >
-          {showRecommended ? 'Hide Recommendations' : 'Show Recommendations'}
-        </button>
-      </form>
+      <FeedForm
+        newFeedUrl={newFeedUrl}
+        loading={loading}
+        showRecommended={showRecommended}
+        onUrlChange={setNewFeedUrl}
+        onSubmit={addFeed}
+        onToggleRecommended={() => setShowRecommended(prev => !prev)}
+        onResetRecommended={() => setDismissedRecommended(false)}
+      />
       {error && <div className="text-red-600 mb-4 text-sm">{error}</div>}
       {showRecommended && !dismissedRecommended && (
         <div className="mb-8 p-5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
