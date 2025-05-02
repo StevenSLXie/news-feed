@@ -336,7 +336,7 @@ export default function Home() {
 
   return (
     <main className="max-w-xl mx-auto px-3 sm:px-6 py-6 font-sans bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      <Header sessionEmail={session.user?.email} theme={theme} setTheme={setTheme} />
+      <Header theme={theme} setTheme={setTheme} />
       <FeedForm
         newFeedUrl={newFeedUrl}
         loading={loading}

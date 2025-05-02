@@ -4,12 +4,11 @@ import React from 'react';
 import { signOut } from 'next-auth/react';
 
 interface HeaderProps {
-  sessionEmail?: string | null | undefined;
   theme: 'light' | 'dark';
   setTheme: React.Dispatch<React.SetStateAction<'light' | 'dark'>>;
 }
 
-export default function Header({ sessionEmail, theme, setTheme }: HeaderProps) {
+export default function Header({ theme, setTheme }: HeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
       <div className="flex items-center gap-2">
