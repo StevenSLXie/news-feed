@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import { useRecommendedFeeds } from "./hooks/useRecommendedFeeds";
 import Header from './components/Header';
 
