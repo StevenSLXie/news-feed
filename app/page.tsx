@@ -5,6 +5,7 @@ import { useSession, signIn } from "next-auth/react";
 import { useRecommendedFeeds } from "./hooks/useRecommendedFeeds";
 import Header from './components/Header';
 import FeedForm from './components/FeedForm';
+import SubscribedFeeds from './components/SubscribedFeeds';
 
 interface Feed {
   id: string;
@@ -446,22 +447,12 @@ export default function Home() {
           </div>
         </div>
       )}
-      {/* Subscribed Feeds */}
-      <h2 className="mt-8 text-lg font-medium cursor-pointer select-none flex items-center gap-2" onClick={() => setFeedsCollapsed(c => !c)}>
-        Subscribed Feeds
-        <span className="text-gray-400 dark:text-gray-600 text-base">{feedsCollapsed ? '▼' : '▲'}</span>
-      </h2>
-      {!feedsCollapsed && (
-        <ul className="pl-0 list-none mb-8 divide-y divide-gray-100 dark:divide-gray-700">
-          {feeds.map(feed => (
-            <li key={feed.id} className="flex items-center py-2">
-              <span className="flex-1 truncate text-gray-800 dark:text-gray-200">{feed.title ? feed.title : feed.url}</span>
-              <button onClick={() => removeFeed(feed.id)} className="ml-2 text-red-500 bg-transparent border-none text-lg hover:bg-red-50 dark:hover:bg-red-900 rounded-full w-8 h-8 flex items-center justify-center transition" title="Unsubscribe">×</button>
-            </li>
-          ))}
-          {feeds.length === 0 && <li className="text-gray-400 dark:text-gray-600 py-2">No feeds subscribed.</li>}
-        </ul>
-      )}
+      <SubscribedFeeds
+        feeds={feeds}
+        feedsCollapsed={feedsCollapsed}
+        onToggle={() => setFeedsCollapsed(c => !c)}
+        removeFeed={removeFeed}
+      />
       <div className="mt-6 mb-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
         <select
           value={tab}
