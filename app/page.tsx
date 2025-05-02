@@ -184,10 +184,16 @@ export default function Home() {
   }
   useEffect(() => {
     if (loadingMore || !hasMore) return;
-    const obs = new IntersectionObserver(entries => { if (entries[0].isIntersecting) setPage(p=>p+1); }, { rootMargin: '200px' });
     const el = loaderRef.current;
-    if (el) obs.observe(el);
-    return () => { if (el) obs.unobserve(el); };
+    if (!el) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        console.log('Infinite scroll: loading page', page + 1);
+        setPage((p) => p + 1);
+      }
+    }, { rootMargin: '200px' });
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [loadingMore, hasMore]);
   useEffect(() => { if (page>1) loadPage(page); }, [page]);
 
@@ -501,7 +507,7 @@ export default function Home() {
       )}
       {tab === 'all' && (
         <>
-          <div ref={loaderRef}></div>
+          <div ref={loaderRef} className="h-1 w-full"></div>
           {loadingMore && <div className="text-center py-4 text-gray-500 dark:text-gray-400">Loading more...</div>}
         </>
       )}
