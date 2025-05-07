@@ -388,7 +388,7 @@ export default function Home() {
           )}
         </ul>
       )}
-      {showRecommended && !dismissedRecommended && (
+      {!searchTerm && showRecommended && !dismissedRecommended && (
         <div className="mb-8 p-5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="font-semibold mb-2 text-lg">Recommended Feeds</div>
           <ul className="mb-4">
@@ -468,7 +468,7 @@ export default function Home() {
           className="w-full sm:w-auto px-3 py-1.5 rounded border border-black/10 bg-black text-white text-sm font-medium hover:bg-neutral-800 transition shadow-sm text-center"
         >Refresh</button>
       </div>
-      {tab === 'all' && (
+      {!searchTerm && tab === 'all' && (
         <ul className="list-none p-0">
           {loadingArticles ? (
             <li className="text-gray-400 dark:text-gray-600">Loading articles...</li>
@@ -496,13 +496,13 @@ export default function Home() {
           )}
         </ul>
       )}
-      {tab === 'all' && (
+      {!searchTerm && tab === 'all' && (
         <>
           <div ref={loaderRef} className="h-10 w-full"></div>
           {loadingMore && <div className="text-center py-4 text-gray-500 dark:text-gray-400">Loading more...</div>}
         </>
       )}
-      {tab === 'bySource' && (
+      {!searchTerm && tab === 'bySource' && (
         <ul className="list-none p-0">
           {feeds.length === 0 ? (
             <li className="text-gray-400 dark:text-gray-600">No feeds subscribed.</li>
@@ -548,7 +548,7 @@ export default function Home() {
           )}
         </ul>
       )}
-      {tab === 'saved' && (
+      {!searchTerm && tab === 'saved' && (
         <ul className="list-none p-0">
           {loadingSaved ? (
             <li className="text-gray-400 dark:text-gray-600">Loading saved articles...</li>
