@@ -365,7 +365,9 @@ export default function Home() {
       {searchTerm && (
         <ul className="list-none p-0">
           {filteredArticles.length === 0 ? (
-            <li className="text-gray-400 dark:text-gray-600">No articles match "{searchTerm}".</li>
+            <li className="text-gray-400 dark:text-gray-600">
+              No articles match &quot;{searchTerm}&quot;.
+            </li>
           ) : (
             filteredArticles.map((article, idx) => (
               <li key={idx} className="mb-5 pb-4 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg shadow-sm px-3 py-3 flex flex-col gap-2">
