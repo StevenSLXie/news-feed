@@ -59,6 +59,10 @@ export default function Home() {
   const [errorSaved, setErrorSaved] = useState<string | null>(null);
   // indicator for recent save/unsave actions
   const [justAction, setJustAction] = useState<{ link: string; type: 'saved' | 'removed' } | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const filteredArticles = articles.filter(a =>
+    a.title?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Daily recommendation throttle (client-only)
   const [showRecommended, setShowRecommended] = useState(false);
@@ -347,6 +351,41 @@ export default function Home() {
         onResetRecommended={() => setDismissedRecommended(false)}
       />
       {error && <div className="text-red-600 mb-4 text-sm">{error}</div>}
+      {/* Search box */}
+      <div className="mt-4 mb-6">
+        <input
+          type="text"
+          placeholder="🔍 Search articles…"
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-300"
+        />
+      </div>
+      {/* If searching, show filtered results immediately */}
+      {searchTerm && (
+        <ul className="list-none p-0">
+          {filteredArticles.length === 0 ? (
+            <li className="text-gray-400 dark:text-gray-600">No articles match "{searchTerm}".</li>
+          ) : (
+            filteredArticles.map((article, idx) => (
+              <li key={idx} className="mb-5 pb-4 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg shadow-sm px-3 py-3 flex flex-col gap-2">
+                <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 dark:text-blue-400 hover:underline break-words">{article.title}</a>
+                <div className="text-xs text-gray-500 dark:text-gray-400">{article.feedTitle} · {article.published ? new Date(article.published).toLocaleString() : ''}</div>
+                <div className="flex items-center gap-2 mt-2 relative">
+                  <button onClick={() => archiveArticle(article)} title="Archive" className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition" aria-label="Archive">✅</button>
+                  <button onClick={() => toggleSaved(article)} title={article.saved ? 'Unsave' : 'Save'} className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition" aria-label={article.saved ? 'Unsave' : 'Save'}>🔖</button>
+                  {justAction?.link === article.link && justAction?.type === 'saved' && <span className="text-green-500 ml-1 text-xs">Saved!</span>}
+                  {justAction?.link === article.link && justAction?.type === 'removed' && <span className="text-red-500 ml-1 text-xs">Removed!</span>}
+                  <button onClick={() => handleFetchSummary(article.link ?? '')} title="AI Summary" className="px-2 py-1 rounded text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center gap-1" aria-label="AI Summary" disabled={!article.link}>💡 AI Summary</button>
+                </div>
+                {loadingSummaries[article.link!] && <span>Loading summary...</span>}
+                {summaries[article.link!] && <div className="mt-2 break-words whitespace-normal">{summaries[article.link!]}</div>}
+                {errorSummaries[article.link!] && <div className="mt-2 text-red-500">{errorSummaries[article.link!]}</div>}
+              </li>
+            ))
+          )}
+        </ul>
+      )}
       {showRecommended && !dismissedRecommended && (
         <div className="mb-8 p-5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="font-semibold mb-2 text-lg">Recommended Feeds</div>
@@ -431,10 +470,10 @@ export default function Home() {
         <ul className="list-none p-0">
           {loadingArticles ? (
             <li className="text-gray-400 dark:text-gray-600">Loading articles...</li>
-          ) : articles.length === 0 ? (
+          ) : filteredArticles.length === 0 ? (
             <li className="text-gray-400 dark:text-gray-600">No articles to show.</li>
           ) : (
-            articles.map((article, idx) => {
+            filteredArticles.map((article, idx) => {
               return (
                 <li key={idx} className="mb-5 pb-4 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg shadow-sm px-3 py-3 flex flex-col gap-2">
                   <a href={article.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium text-blue-700 dark:text-blue-400 hover:underline break-words">{article.title}</a>
